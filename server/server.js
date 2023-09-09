@@ -12,7 +12,7 @@ const RouteS3 = require("./routes/RouteS3");
 
 const app = express();
 
-app.use(cors()); //chia se tai nguyen
+app.use(cors());
 // app.use(express.static("client"));
 app.use(cookieParser());
 app.use(fileUpload());
@@ -20,17 +20,17 @@ app.use(fileUpload());
 /**
  * Routers
  */
-app.use("/s3", RouteS3);
+app.use("/api", RouteS3);
 app.get("/", (req, res) => {
   res.json({
-    message: "Server 3 :)",
+    message: "Hello Friend :)",
   });
 });
 
 /**
  * Create server
  */
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 const server = http.createServer(app);
 
 server.listen(port, async () => {

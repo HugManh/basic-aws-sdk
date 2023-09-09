@@ -1,0 +1,17 @@
+.gallery {
+  -webkit-column-count: 10;
+  -moz-column-count: 10;
+  column-count: 10;
+  -webkit-column-width: 20%;
+  -moz-column-width: 20%;
+  column-width: 20%;
+  padding: 0 50px;
+  padding-bottom: 100px;
+}
+
+.gallery .pics {
+  -webkit-transform: all 350ms ease;
+  transform: all 350ms ease;
+  cursor: pointer;
+  margin-bottom: 12px;
+}

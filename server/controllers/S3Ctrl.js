@@ -1,4 +1,4 @@
-const { s3 } = require("../config/S3");
+const { s3Instance } = require("../config/S3");
 require("dotenv").config();
 /* Cache */
 // const { redisServer } = require("../connect/redis");
@@ -15,13 +15,38 @@ const S3Ctrl = {
                 ACL: "public-read",
                 Key: filename,
             };
-            var url = await s3.getSignedUrlPromise("putObject", params);
+            var url = await s3Instance.getSignedUrlPromise("putObject", params);
             // console.log("Url put object: ", url);
             res.status(200).json({ "message": "Response from S3 server successfully", "url": url });
         } catch (error) {
             res.status(500).json({ "message": error.message });
         }
     },
+    getData: async (req, res) => {
+        try {
+            // console.log(req.params);
+            const { bucketname, objectkey, filename } = req.params;
+            const key = objectkey + "/" + filename;
+            const params = {
+                Bucket: bucketname,
+                Key: key,
+            };
+            const meta_data = await getMeta(bucketname, key);
+            s3Instance.getObject(params, (err, data) => {
+                if (err) {
+                    res.status(500).json({ message: err });
+                } else {
+                    // console.log(data);
+                    res.setHeader("X-Cache", "MISS");
+                    res.writeHead(200, meta_data);
+                    res.end(data.Body);
+                }
+            });
+
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
     // getData: async (req, res) => {
     //     try {
     //         const key = req.params.key;
@@ -104,34 +129,36 @@ const S3Ctrl = {
 }
 
 /* Get metadata */
-// var getMeta = async (key) => {
-//     // console.log("Key:", key);
-//     return new Promise((resolve, reject) => {
-//         try {
-//             // redisServer.get(key, (err, data) => {
-//             //   if (data) {
-//             //     // console.log("Load metadata from cache");
-//             //     const metaData = JSON.parse(data);
-//             //     resolve(metaData);
-//             //   } else {
-//             // console.log("Load metadata from S3");
-//             s3.headObject(
-//                 {
-//                     Bucket: "devceph2",
-//                     Key: key,
-//                 },
-//                 (err, res) => {
-//                     const metaData = JSON.stringify(res);
-//                     // redisServer.setex(key, 3000, metaData); //time: seconds
-//                     resolve(metaData);
-//                 }
-//             );
-//             //   }
-//             // });
-//         } catch (error) {
-//             reject(error);
-//         }
-//     });
-// }
+var getMeta = async (bucketname, key) => {
+    // console.log("Key:", key);
+    return new Promise((resolve, reject) => {
+        try {
+            // redisServer.get(key, (err, data) => {
+            //   if (data) {
+            //     // console.log("Load metadata from cache");
+            //     const metaData = JSON.parse(data);
+            //     resolve(metaData);
+            //   } else {
+            // console.log("Load metadata from S3");
+            s3Instance.headObject(
+                {
+                    Bucket: bucketname,
+                    Key: key,
+                },
+                (err, res) => {
+                    console.log(res.Metadata);
+                    if (err) reject(err);
+                    delete res.Metadata
+                    // redisServer.setex(key, 3000, metaData); //time: seconds
+                    resolve(res);
+                }
+            );
+            //   }
+            // });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
 
 module.exports = S3Ctrl;

@@ -42,11 +42,11 @@ function App() {
       const res2 = await axios.put(
         res.data.url,
         file,
-        // {
-        //   headers: {
-        //     "Content-Type": file.type
-        //   }
-        // }
+        {
+          headers: {
+            "Content-Type": file.type
+          }
+        }
       );
       onSuccess("Ok");
       console.log(res2.data);

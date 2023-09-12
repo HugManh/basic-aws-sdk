@@ -10,6 +10,6 @@ AWS.config.update({
   s3ForcePathStyle: true,
 });
 
-const s3 = new AWS.S3();
+const s3Instance = new AWS.S3();
 
-module.exports = { s3 };
+module.exports = { s3Instance };

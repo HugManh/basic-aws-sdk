@@ -12,11 +12,11 @@ const S3Ctrl = {
             const { bucketname, filename } = req.params;
             const params = {
                 Bucket: bucketname,
-                ACL: "public-read",
+                // ACL: "public-read",
                 Key: filename,
             };
             var url = await s3Instance.getSignedUrlPromise("putObject", params);
-            // console.log("Url put object: ", url);
+            console.log("[SignedUrl] url: ", url);
             res.status(200).json({ "message": "Response from S3 server successfully", "url": url });
         } catch (error) {
             res.status(500).json({ "message": error.message });
@@ -24,9 +24,12 @@ const S3Ctrl = {
     },
     getData: async (req, res) => {
         try {
-            // console.log(req.params);
+            console.log(req.params);
             const { bucketname, objectkey, filename } = req.params;
-            const key = objectkey + "/" + filename;
+            let key = filename
+            if (objectkey) {
+                key = objectkey + "/" + filename;
+            }
             const params = {
                 Bucket: bucketname,
                 Key: key,
@@ -130,7 +133,7 @@ const S3Ctrl = {
 
 /* Get metadata */
 var getMeta = async (bucketname, key) => {
-    // console.log("Key:", key);
+    console.log("bucketname: ", bucketname, "key: ", key);
     return new Promise((resolve, reject) => {
         try {
             // redisServer.get(key, (err, data) => {
@@ -146,7 +149,7 @@ var getMeta = async (bucketname, key) => {
                     Key: key,
                 },
                 (err, res) => {
-                    console.log(res.Metadata);
+                    console.log("---", res);
                     if (err) reject(err);
                     delete res.Metadata
                     // redisServer.setex(key, 3000, metaData); //time: seconds

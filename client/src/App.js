@@ -1,29 +1,33 @@
 import { Button, Spin, Upload, message } from "antd"
 import "antd/dist/reset.css"
-import './App.css';
 import axios from "axios";
 import { useEffect, useState } from "react";
+// import fs from 'fs-extra'
+// import path from 'path'
+import './App.css';
 import './gallery.css'
 
 function App() {
 
-  const [allImage, setAllImage] = useState()
-  const [image, setImage] = useState()
+  // const [allImage, setAllImage] = useState()
+  const [image, setImage] = useState("")
   const [show, setShow] = useState(false)
 
-  useEffect(() => {
-    getImage()
-  }, [])
+  // useEffect(() => {
+  //   getImage()
+  // }, [])
 
-  const getImage = async () => {
-    try {
-      const result = await axios.get("http://localhost:3000/api/v1/images")
-      setAllImage(result.data.data)
-    } catch (error) {
-      console.log(error);
+  // const getImage = async () => {
+  //   try {
+  //     console.log(path.join(__dirname, "test"));
+  //     // const readable = fs.createReadStream(path.join(__dirname,"test"))
+  //     // const result = await axios.get("http://localhost:3000/api/v1/images")
+  //     // setAllImage(result.data.data)
+  //   } catch (error) {
+  //     console.log(error);
 
-    }
-  }
+  //   }
+  // }
 
 
   const uploadImage = async options => {
@@ -33,27 +37,26 @@ function App() {
     fmData.append("file", file);
     console.log("file: ", file);
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/bizfly-live/" + file.name,
+      const res = await axios.post(
+        "http://localhost:8000/api/bizfly-live/" + file.name,
         fmData,
       );
 
-      console.log("Data Response: ", res.data);
+      console.log("[http] Get url: ", res.data);
       const res2 = await axios.put(
         res.data.url,
         file,
         {
           headers: {
-            "Content-Type": file.type
+            "Content-Type": file.type,
           }
         }
       );
       onSuccess("Ok");
-      console.log(res2.data);
-      // setImage(res.data.data.file_url)
+      console.log("[http] Image: ", "http://localhost:8000/api/bizfly-live/" + file.name);
+      setImage("http://localhost:8000/api/bizfly-live/" + file.name)
     } catch (err) {
-      console.log("Eroor: ", err);
-      const error = new Error("Some error");
+      console.log("Error: ", err);
       onError({ err });
     }
   };
@@ -93,7 +96,7 @@ function App() {
 
               if (status === 'done') {
                 message.success(`${file.file.name} file uploaded successfully.`);
-                getImage()
+                // getImage()
               } else if (status === 'error') {
                 message.error(`${file.file.name} file upload failed.`);
               }
@@ -129,7 +132,7 @@ function App() {
           </Upload>
         </div>
       </div >
-      <div className="gallery">
+      {/* <div className="gallery">
         {allImage == null
           ? ""
           : allImage.map((data, index) => {
@@ -139,7 +142,7 @@ function App() {
               </div>
             )
           })}
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -5,7 +5,7 @@ RouteS3
   .route("/:bucketname/:filename")
   .post(S3Ctrl.generateUrl)
 RouteS3
-  .route("/:bucketname/:objectkey(*)/:filename")
+  .route("/:bucketname/:objectkey(*)?/:filename")
   .get(S3Ctrl.getData)
 
 module.exports = RouteS3

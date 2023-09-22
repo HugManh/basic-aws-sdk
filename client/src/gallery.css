@@ -1,4 +1,5 @@
 .gallery {
+  display: flex;
   -webkit-column-count: 10;
   -moz-column-count: 10;
   column-count: 10;
@@ -13,5 +14,7 @@
   -webkit-transform: all 350ms ease;
   transform: all 350ms ease;
   cursor: pointer;
-  margin-bottom: 12px;
+  margin: 5px 2px;
+  width: 200px;
+  height: 200px;
 }

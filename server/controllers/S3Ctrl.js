@@ -17,7 +17,7 @@ const S3Ctrl = {
             };
             var url = await s3Instance.getSignedUrlPromise("putObject", params);
             console.log("[SignedUrl] url: ", url);
-            res.status(200).json({ "message": "Response from S3 server successfully", "url": url });
+            res.status(200).json({ "message": "Response from S3 server successfully", "data": url });
         } catch (error) {
             res.status(500).json({ "message": error.message });
         }
@@ -46,6 +46,23 @@ const S3Ctrl = {
                 }
             });
 
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    },
+    listKeys: async (req, res) => {
+        try {
+            const { bucketname } = req.params;
+            const params = {
+                Bucket: bucketname
+            };
+
+            s3Instance.listObjectsV2(params, (err, data) => {
+                const list = data.Contents.filter(it => {
+                    return (it.Key.endsWith(".png") || it.Key.endsWith(".jpg"))
+                })
+                res.status(200).json({ "message": "Response from S3 server successfully", "data": list });
+            })
         } catch (error) {
             res.status(500).json({ message: error.message });
         }

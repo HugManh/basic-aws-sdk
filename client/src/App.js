@@ -9,25 +9,25 @@ import './gallery.css'
 
 function App() {
 
-  // const [allImage, setAllImage] = useState()
+  const [allImage, setAllImage] = useState([])
   const [image, setImage] = useState("")
   const [show, setShow] = useState(false)
 
-  // useEffect(() => {
-  //   getImage()
-  // }, [])
+  useEffect(() => {
+    getImage()
+  }, [])
 
-  // const getImage = async () => {
-  //   try {
-  //     console.log(path.join(__dirname, "test"));
-  //     // const readable = fs.createReadStream(path.join(__dirname,"test"))
-  //     // const result = await axios.get("http://localhost:3000/api/v1/images")
-  //     // setAllImage(result.data.data)
-  //   } catch (error) {
-  //     console.log(error);
+  const getImage = async () => {
+    try {
+      const list = await axios.get("http://localhost:8000/api/bizfly-live")
+      const listUrl = list.data.data.map(it => { return "http://localhost:8000/api/bizfly-live/" + it.Key })
+      console.log("listUrl: ", listUrl);
+      setAllImage(listUrl)
+    } catch (error) {
+      console.log(error);
 
-  //   }
-  // }
+    }
+  }
 
 
   const uploadImage = async options => {
@@ -43,8 +43,8 @@ function App() {
       );
 
       console.log("[http] Get url: ", res.data);
-      const res2 = await axios.put(
-        res.data.url,
+      await axios.put(
+        res.data.data,
         file,
         {
           headers: {
@@ -96,7 +96,7 @@ function App() {
 
               if (status === 'done') {
                 message.success(`${file.file.name} file uploaded successfully.`);
-                // getImage()
+                getImage()
               } else if (status === 'error') {
                 message.error(`${file.file.name} file upload failed.`);
               }
@@ -132,17 +132,17 @@ function App() {
           </Upload>
         </div>
       </div >
-      {/* <div className="gallery">
-        {allImage == null
-          ? ""
-          : allImage.map((data, index) => {
+      <div className="gallery">
+        {allImage.length > 0
+          ? allImage.map((data, index) => {
             return (
               <div className="pics" key={index}>
-                <img src={data.url} alt={data.name} style={{ width: '100%' }} />
+                <img src={data} alt={data.name} style={{ width: '100%' }} />
               </div>
             )
-          })}
-      </div> */}
+          }) : null
+        }
+      </div>
     </div>
   );
 }

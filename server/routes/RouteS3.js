@@ -7,5 +7,8 @@ RouteS3
 RouteS3
   .route("/:bucketname/:objectkey(*)?/:filename")
   .get(S3Ctrl.getData)
+RouteS3
+  .route("/:bucketname")
+  .get(S3Ctrl.listKeys)
 
 module.exports = RouteS3

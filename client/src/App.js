@@ -2,8 +2,7 @@ import { Button, Spin, Upload, message } from "antd"
 import "antd/dist/reset.css"
 import axios from "axios";
 import { useEffect, useState } from "react";
-// import fs from 'fs-extra'
-// import path from 'path'
+import { nanoid } from 'nanoid'
 import './App.css';
 import './gallery.css'
 
@@ -36,9 +35,11 @@ function App() {
     const fmData = new FormData();
     fmData.append("file", file);
     console.log("file: ", file);
+    const id = nanoid()
+    const key = id + "/" + file.name
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/bizfly-live/" + file.name,
+        "http://localhost:8000/api/bizfly-live/" + key,
         fmData,
       );
 
@@ -53,8 +54,8 @@ function App() {
         }
       );
       onSuccess("Ok");
-      console.log("[http] Image: ", "http://localhost:8000/api/bizfly-live/" + file.name);
-      setImage("http://localhost:8000/api/bizfly-live/" + file.name)
+      console.log("[http] Image: ", "http://localhost:8000/api/bizfly-live/" + key);
+      setImage("http://localhost:8000/api/bizfly-live/" + key)
     } catch (err) {
       console.log("Error: ", err);
       onError({ err });
@@ -137,7 +138,7 @@ function App() {
           ? allImage.map((data, index) => {
             return (
               <div className="pics" key={index}>
-                <img src={data} alt={data.name} style={{ width: '100%' }} />
+                <img src={data} alt={data.name} className="gallery_img" />
               </div>
             )
           }) : null

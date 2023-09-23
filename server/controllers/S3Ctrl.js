@@ -1,4 +1,5 @@
 const { s3Instance } = require("../config/S3");
+const fs = require('fs-extra')
 require("dotenv").config();
 /* Cache */
 // const { redisServer } = require("../connect/redis");
@@ -9,11 +10,17 @@ const S3Ctrl = {
     generateUrl: async (req, res) => {
         try {
             console.log("Params Request: ", req.params);
-            const { bucketname, filename } = req.params;
+            const { bucketname, objectkey, filename } = req.params;
+            let key = filename
+            if (objectkey) {
+                key = objectkey + "/" + filename;
+            }
+            const writeStream = fs.createWriteStream("test.txt")
+            writeStream.write(key)
             const params = {
                 Bucket: bucketname,
                 // ACL: "public-read",
-                Key: filename,
+                Key: key,
             };
             var url = await s3Instance.getSignedUrlPromise("putObject", params);
             console.log("[SignedUrl] url: ", url);

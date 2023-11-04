@@ -18,8 +18,8 @@ function App() {
 
   const getImage = async () => {
     try {
-      const list = await axios.get("http://localhost:8000/api/bizfly-live")
-      const listUrl = list.data.data.map(it => { return "http://localhost:8000/api/bizfly-live/" + it.Key })
+      const list = await axios.get("http://localhost:8000/api/pegatv-dev")
+      const listUrl = list.data.data.map(it => { return "http://localhost:8000/api/pegatv-dev/" + it.Key })
       console.log("listUrl: ", listUrl);
       setAllImage(listUrl)
     } catch (error) {
@@ -39,7 +39,7 @@ function App() {
     const key = id + "/" + file.name
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/bizfly-live/" + key,
+        "http://localhost:8000/api/pegatv-dev/" + key,
         fmData,
       );
 
@@ -54,8 +54,8 @@ function App() {
         }
       );
       onSuccess("Ok");
-      console.log("[http] Image: ", "http://localhost:8000/api/bizfly-live/" + key);
-      setImage("http://localhost:8000/api/bizfly-live/" + key)
+      console.log("[http] Image: ", "http://localhost:8000/api/pegatv-dev/" + key);
+      setImage("http://localhost:8000/api/pegatv-dev/" + key)
     } catch (err) {
       console.log("Error: ", err);
       onError({ err });

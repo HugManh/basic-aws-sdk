@@ -121,46 +121,56 @@ const S3Ctrl = {
                     });
                 }
             } else {
-                // if (!range) {
-                //     res.status(404).json({ message: "Requires Range header" })
-                // }
                 // size > 50MB
-                const CHUNK_SIZE = 10 ** 6; //1MB
-                const start = !range ? 0 : Number(range.replace(/\D/g, ""));
-                const end = Math.min(start + CHUNK_SIZE, contentLength - 1);
-                const length = end - start + 1;
-                console.log("Range: %d-%d Length: %d", start, end, length);
+                if (range) {
+                    // const CHUNK_SIZE = 10 ** 6; //1MB
+                    const start = Number(range.replace(/\D/g, ""));
+                    // const end = Math.min(start + CHUNK_SIZE, contentLength - 1);
+                    const end = contentLength - 1;
+                    const length = end - start + 1;
+                    console.log("Range: %d-%d Length: %d", start, end, length);
 
-                //headers options
-                const headers = {
-                    "Content-Range": `bytes ${start}-${end}/${contentLength}`,
-                    "Accept-Ranges": "bytes",
-                    "Content-Length": length,
-                    "Content-Type": contentType,
-                };
+                    //headers options
+                    const headers = {
+                        "Content-Range": `bytes ${start}-${end}/${contentLength}`,
+                        "Accept-Ranges": "bytes",
+                        "Content-Length": length,
+                        "Content-Type": contentType,
+                    };
 
-                const range_p = range + end; //bytes=start-end
-                console.log("range_p:", range_p);
-                const key_range = key + "/" + range_p;
-                const params = {
-                    Bucket: bucketname,
-                    Key: key,
-                    Range: range_p.toString(),
-                };
+                    const range_p = range + end; //bytes=start-end
+                    console.log("range_p:", range_p);
+                    const key_range = key + "/" + range_p;
+                    const params = {
+                        Bucket: bucketname,
+                        Key: key,
+                        Range: range_p.toString(),
+                    };
 
-                // let cached = cacheStream.get(key_range);
-                // if (cached) {
-                //     res.setHeader("X-Cache", "HIT");
-                //     res.writeHead(206, headers);
-                //     cached.pipe(res);
-                // } else {
-                res.setHeader("X-Cache", "MISS");
-                res.writeHead(206, headers);
+                    // let cached = cacheStream.get(key_range);
+                    // if (cached) {
+                    //     res.setHeader("X-Cache", "HIT");
+                    //     res.writeHead(206, headers);
+                    //     cached.pipe(res);
+                    // } else {
+                    res.setHeader("X-Cache", "MISS");
+                    res.writeHead(206, headers);
 
-                let readStream = s3Instance.getObject(params).createReadStream();
-                // readStream.pipe(cacheStream.set(key_range)).pipe(res);
-                readStream.pipe(res);
-                // }
+                    let readStream = s3Instance.getObject(params).createReadStream();
+                    // readStream.pipe(cacheStream.set(key_range)).pipe(res);
+                    readStream.pipe(res);
+                    // }
+                } else {
+                    //headers options
+                    const headers = {
+                        "Accept-Ranges": "bytes",
+                        "Content-Length": contentLength,
+                        "Content-Type": contentType,
+                    };
+                    res.setHeader("X-Cache", "MISS");
+                    res.writeHead(200, headers);
+                    res.end()
+                }
             }
         } catch (error) {
             res.status(500).json({ message: error.message });

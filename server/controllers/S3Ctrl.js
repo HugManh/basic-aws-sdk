@@ -5,6 +5,9 @@ const myCache = require("../cache/index")
 /* Cache */
 // const { redisServer } = require("../connect/redis");
 
+let data = '';
+let done = false;
+
 const S3Ctrl = {
     generateUrl: async (req, res) => {
         try {
@@ -129,37 +132,51 @@ const S3Ctrl = {
                     const end = contentLength - 1;
                     const length = end - start + 1;
                     console.log("Range: %d-%d Length: %d", start, end, length);
+                    if (done) {
+                        console.log("-----> in cache");
+                        const headers = {
+                            "Content-Range": `bytes ${start}-${end}/${contentLength}`,
+                            "Accept-Ranges": "bytes",
+                            "Content-Length": length,
+                            "Content-Type": contentType,
+                        };
 
-                    //headers options
-                    const headers = {
-                        "Content-Range": `bytes ${start}-${end}/${contentLength}`,
-                        "Accept-Ranges": "bytes",
-                        "Content-Length": length,
-                        "Content-Type": contentType,
-                    };
+                        res.setHeader("X-Cache", "HIT");
+                        res.writeHead(206, headers);
 
-                    const range_p = range + end; //bytes=start-end
-                    console.log("range_p:", range_p);
-                    const key_range = key + "/" + range_p;
-                    const params = {
-                        Bucket: bucketname,
-                        Key: key,
-                        Range: range_p.toString(),
-                    };
+                        fs.createReadStream('./trash/output.mp4', { start: start, end: end }).pipe(res);
+                    } else {
+                        //headers options
+                        const headers = {
+                            "Content-Range": `bytes ${start}-${end}/${contentLength}`,
+                            "Accept-Ranges": "bytes",
+                            "Content-Length": length,
+                            "Content-Type": contentType,
+                        };
 
-                    // let cached = cacheStream.get(key_range);
-                    // if (cached) {
-                    //     res.setHeader("X-Cache", "HIT");
-                    //     res.writeHead(206, headers);
-                    //     cached.pipe(res);
-                    // } else {
-                    res.setHeader("X-Cache", "MISS");
-                    res.writeHead(206, headers);
+                        const range_p = range + end; //bytes=start-end
+                        console.log("range_p:", range_p);
+                        const key_range = key + "/" + range_p;
+                        const params = {
+                            Bucket: bucketname,
+                            Key: key,
+                            Range: range_p.toString(),
+                        };
 
-                    let readStream = s3Instance.getObject(params).createReadStream();
-                    // readStream.pipe(cacheStream.set(key_range)).pipe(res);
-                    readStream.pipe(res);
-                    // }
+                        // let cached = cacheStream.get(key_range);
+                        // if (cached) {
+                        //     res.setHeader("X-Cache", "HIT");
+                        //     res.writeHead(206, headers);
+                        //     cached.pipe(res);
+                        // } else {
+                        res.setHeader("X-Cache", "MISS");
+                        res.writeHead(206, headers);
+
+                        let readStream = s3Instance.getObject(params).createReadStream();
+                        // readStream.pipe(cacheStream.set(key_range)).pipe(res);
+                        readStream.pipe(res);
+                        // }
+                    }
                 } else {
                     //headers options
                     const headers = {
@@ -167,9 +184,32 @@ const S3Ctrl = {
                         "Content-Length": contentLength,
                         "Content-Type": contentType,
                     };
-                    res.setHeader("X-Cache", "MISS");
+                    (done) ? res.setHeader("X-Cache", "HIT") : res.setHeader("X-Cache", "MISS");
                     res.writeHead(200, headers);
                     res.end()
+                    if (!done) {
+                        const params = {
+                            Bucket: bucketname,
+                            Key: key,
+                        };
+                        let readerStream = s3Instance.getObject(params).createReadStream();
+                        let writerStream = fs.createWriteStream('./trash/output.mp4');
+                        // readerStream.setEncoding('UTF8');
+                        // Sự kiện khi đọc data
+                        readerStream.on('data', function (chunk) {
+                            data += chunk;
+                            writerStream.write(chunk)
+                        });
+                        //Khi kết thúc đọc data và in ra nội dung đã đọc
+                        readerStream.on('end', function () {
+                            console.log("--------------> write done!")
+                            done = true
+                        });
+                        //Khi xảy ra lỗi in ra lỗi
+                        readerStream.on('error', function (err) {
+                            console.log(err.stack);
+                        });
+                    }
                 }
             }
         } catch (error) {

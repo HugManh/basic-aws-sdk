@@ -9,23 +9,22 @@ let data = '';
 let done = false;
 
 const S3Ctrl = {
-    generateUrl: async (req, res) => {
+    generateUrlUpload: async (req, res) => {
         try {
             console.log("Params Request: ", req.params);
-            const { bucketname, objectkey, filename } = req.params;
+            const { bucketname, objectpath, filename } = req.params;
             let key = filename
-            if (objectkey) {
-                key = objectkey + "/" + filename;
+            if (objectpath) {
+                key = objectpath + "/" + filename;
             }
-            const writeStream = fs.createWriteStream("test.txt")
-            writeStream.write(key)
             const params = {
                 Bucket: bucketname,
                 // ACL: "public-read",
-                Key: key,
+                Key: key,          
             };
+            console.log("[generateUrlUpload] params: ", params);
             var url = await s3Instance.getSignedUrlPromise("putObject", params);
-            console.log("[SignedUrl] url: ", url);
+            console.log("[generateUrlUpload] url: ", url);
             res.status(200).json({ "message": "Response from S3 server successfully", "data": url });
         } catch (error) {
             res.status(500).json({ "message": error.message });
@@ -34,10 +33,10 @@ const S3Ctrl = {
     // getData: async (req, res) => {
     //     try {
     //         console.log(req.params);
-    //         const { bucketname, objectkey, filename } = req.params;
+    //         const { bucketname, objectpath, filename } = req.params;
     //         let key = filename
-    //         if (objectkey) {
-    //             key = objectkey + "/" + filename;
+    //         if (objectpath) {
+    //             key = objectpath + "/" + filename;
     //         }
     //         const params = {
     //             Bucket: bucketname,
@@ -59,29 +58,29 @@ const S3Ctrl = {
     //         res.status(500).json({ message: error.message });
     //     }
     // },
-    listKeys: async (req, res) => {
-        try {
-            const { bucketname } = req.params;
-            const params = {
-                Bucket: bucketname
-            };
+    // listKeys: async (req, res) => {
+    //     try {
+    //         const { bucketname } = req.params;
+    //         const params = {
+    //             Bucket: bucketname
+    //         };
 
-            s3Instance.listObjectsV2(params, (err, data) => {
-                const list = data.Contents.filter(it => {
-                    return (it.Key.endsWith(".png") || it.Key.endsWith(".jpg"))
-                })
-                res.status(200).json({ "message": "Response from S3 server successfully", "data": list });
-            })
-        } catch (error) {
-            res.status(500).json({ message: error.message });
-        }
-    },
+    //         s3Instance.listObjectsV2(params, (err, data) => {
+    //             const list = data.Contents.filter(it => {
+    //                 return (it.Key.endsWith(".png") || it.Key.endsWith(".jpg"))
+    //             })
+    //             res.status(200).json({ "message": "Response from S3 server successfully", "data": list });
+    //         })
+    //     } catch (error) {
+    //         res.status(500).json({ message: error.message });
+    //     }
+    // },
     getData: async (req, res) => {
         try {
-            const { bucketname, objectkey, filename } = req.params;
+            const { bucketname, objectpath, filename } = req.params;
             let key = filename
-            if (objectkey) {
-                key = objectkey + "/" + filename;
+            if (objectpath) {
+                key = objectpath + "/" + filename;
             }
             const range = req.headers.range;
 
@@ -197,7 +196,7 @@ const S3Ctrl = {
                         // readerStream.setEncoding('UTF8');
                         // Sự kiện khi đọc data
                         readerStream.on('data', function (chunk) {
-                            data += chunk;
+                            // data += chunk;
                             writerStream.write(chunk)
                         });
                         //Khi kết thúc đọc data và in ra nội dung đã đọc
@@ -234,10 +233,11 @@ var getMeta = async (bucketname, key) => {
                 {
                     Bucket: bucketname,
                     Key: key,
+                    
                 },
                 (err, res) => {
                     if (err) {
-                        console.log('err:', err.statusCode, err.message);
+                        console.log('err:', err);
                         throw new Error({ message: err.statusCode + '/' + err.code + ' ' + err.message });
                     };
                     delete res.Metadata

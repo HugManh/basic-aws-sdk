@@ -1,61 +1,62 @@
-import { Button, Spin, Upload, message } from "antd"
-import "antd/dist/reset.css"
+import { Button, Spin, Upload, message } from "antd";
+import "antd/dist/reset.css";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { nanoid } from 'nanoid'
-import './App.css';
-import './gallery.css'
+import { nanoid } from "nanoid";
+import "./App.css";
+import "./gallery.css";
 
 function App() {
-
-  const [allImage, setAllImage] = useState([])
-  const [image, setImage] = useState("")
-  const [show, setShow] = useState(false)
+  const [allImage, setAllImage] = useState([]);
+  const [image, setImage] = useState("");
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    getImage()
-  }, [])
+    getImage();
+  }, []);
 
   const getImage = async () => {
     try {
-      const list = await axios.get("http://localhost:8000/api/pegatv-dev")
-      const listUrl = list.data.data.map(it => { return "http://localhost:8000/api/pegatv-dev/" + it.Key })
+      const list = await axios.get("http://localhost:8000/api/ttcp-live-08600a97-525f-4c09-9bfe-6a158eacfcd3");
+      const listUrl = list.data.data.map((it) => {
+        return "http://localhost:8000/api/ttcp-live-08600a97-525f-4c09-9bfe-6a158eacfcd3/" + it.Key;
+      });
       console.log("listUrl: ", listUrl);
-      setAllImage(listUrl)
+      setAllImage(listUrl);
     } catch (error) {
       console.log(error);
-
     }
-  }
+  };
 
-
-  const uploadImage = async options => {
+  const uploadImage = async (options) => {
     const { onSuccess, onError, file, onProgress } = options;
 
     const fmData = new FormData();
     fmData.append("file", file);
     console.log("file: ", file);
-    const id = nanoid()
-    const key = id + "/" + file.name
+    const id = nanoid();
+    const key = id + "/" + file.name;
     try {
       const res = await axios.post(
-        "http://localhost:8000/api/pegatv-dev/" + key,
-        fmData,
+        "http://localhost:8000/api/ttcp-live-08600a97-525f-4c09-9bfe-6a158eacfcd3/" + key,
+        fmData
       );
 
       console.log("[http] Get url: ", res.data);
-      await axios.put(
-        res.data.data,
-        file,
-        {
-          headers: {
-            "Content-Type": file.type,
-          }
-        }
-      );
+      await axios.put(res.data.data, file, {
+        headers: {
+          "Content-Type": file.type,
+        },
+        mode: 'cors',
+      }).catch(error => {
+        console.error('Error:', error);
+      });;
       onSuccess("Ok");
-      console.log("[http] Image: ", "http://localhost:8000/api/pegatv-dev/" + key);
-      setImage("http://localhost:8000/api/pegatv-dev/" + key)
+      console.log(
+        "[http] Image: ",
+        "http://localhost:8000/api/ttcp-live-08600a97-525f-4c09-9bfe-6a158eacfcd3/" + key
+      );
+      setImage("http://localhost:8000/api/ttcp-live-08600a97-525f-4c09-9bfe-6a158eacfcd3/" + key);
     } catch (err) {
       console.log("Error: ", err);
       onError({ err });
@@ -63,16 +64,35 @@ function App() {
   };
 
   return (
-    <div style={{
-      display: "block",
-      margin: "0 100px",
-    }}>
-      <div style={{
+    <div
+      style={{
         display: "flex",
-        justifyContent: "center",
+        margin: "0px 100px",
+        flexDirection: "column",
         alignItems: "center",
-        height: "20vh",
-      }}>
+      }}
+    >
+      <div
+        style={{
+          width: "600px",
+          marginTop:"20px"
+        }}
+      >
+        <video id="videoPlayer" style={{ width:"100%", padding: "5px" }} controls autoplay>
+          <source
+            src="http://localhost:8000/api/ttcp-live-08600a97-525f-4c09-9bfe-6a158eacfcd3/test/P . L . A . Y . L . I . S . T - - B U Ồ N . C H Ú T . T H Ô I . C Ó . S A O . Đ Â U - - Copy.mp4"
+            type="video/mp4"
+          />
+        </video>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "20vh",
+        }}
+      >
         <div>
           {/* <Button onClick={() => {
           !show ? setShow(true) : setShow(false)
@@ -91,14 +111,16 @@ function App() {
             }}
             onChange={(file) => {
               const { status } = file.file;
-              if (status === 'uploading') {
-                console.log('uploading: ', file)
+              if (status === "uploading") {
+                console.log("uploading: ", file);
               }
 
-              if (status === 'done') {
-                message.success(`${file.file.name} file uploaded successfully.`);
-                getImage()
-              } else if (status === 'error') {
+              if (status === "done") {
+                message.success(
+                  `${file.file.name} file uploaded successfully.`
+                );
+                getImage();
+              } else if (status === "error") {
                 message.error(`${file.file.name} file upload failed.`);
               }
             }}
@@ -112,37 +134,43 @@ function App() {
             //   }
             // ]}
             iconRender={() => {
-              return <Spin></Spin>
+              return <Spin></Spin>;
             }}
             progress={{
               size: "small",
               strokeColor: {
                 "0%": "#f0f",
-                "100%": "#ff0"
+                "100%": "#ff0",
               },
-              style: { top: 12 }
+              style: { top: 12 },
             }}
           >
             {/* Drag files here OR */}
             {/* <br /> */}
             {/* <Button>Click Upload</Button> */}
             {console.log(image)}
-            {image ?
-              (<img src={image} style={{ height: '100%', width: '100%', padding: "5px" }} />) :
-              (<Button>Click Upload</Button>)}
+            {image ? (
+              <img
+                alt=""
+                src={image}
+                style={{ height: "100%", width: "100%", padding: "5px" }}
+              />
+            ) : (
+              <Button>Click Upload</Button>
+            )}
           </Upload>
         </div>
-      </div >
+      </div>
       <div className="gallery">
         {allImage.length > 0
           ? allImage.map((data, index) => {
-            return (
-              <div className="pics" key={index}>
-                <img src={data} alt={data.name} className="gallery_img" />
-              </div>
-            )
-          }) : null
-        }
+              return (
+                <div className="pics" key={index}>
+                  <img src={data} alt={data.name} className="gallery_img" />
+                </div>
+              );
+            })
+          : null}
       </div>
     </div>
   );

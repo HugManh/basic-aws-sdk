@@ -5,12 +5,14 @@
 
 .manager {
   display: flex;
+  flex-direction: column;
   align-items: center;
+  background-color: #333;
 }
 
 .upload {
   display: flex;
-  margin-bottom: 20px;
+  margin: 50px 20px;
 }
 
 img {

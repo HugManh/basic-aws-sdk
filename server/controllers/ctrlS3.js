@@ -1,7 +1,8 @@
-require("dotenv").config();
-const { s3Instance } = require("../config/S3");
 const fs = require('fs-extra')
-const myCache = require("../cache/index")
+require("dotenv").config();
+
+const myCache = require("../cache/index");
+const { objectHead } = require("../lib/api/objectHead");
 /* Cache */
 // const { redisServer } = require("../connect/redis");
 
@@ -20,7 +21,7 @@ const S3Ctrl = {
             const params = {
                 Bucket: bucketname,
                 // ACL: "public-read",
-                Key: key,          
+                Key: key,
             };
             console.log("[generateUrlUpload] params: ", params);
             var url = await s3Instance.getSignedUrlPromise("putObject", params);
@@ -42,7 +43,7 @@ const S3Ctrl = {
     //             Bucket: bucketname,
     //             Key: key,
     //         };
-    //         const meta_data = await getMeta(bucketname, key);
+    //         const meta_data = await objectHead(bucketname, key);
     //         s3Instance.getObject(params, (err, data) => {
     //             if (err) {
     //                 res.status(500).json({ message: err });
@@ -85,7 +86,7 @@ const S3Ctrl = {
             const range = req.headers.range;
 
             // Get metadata
-            const meta_data = await getMeta(bucketname, key);
+            const meta_data = await objectHead(bucketname, key);
             console.log('meta_data:', meta_data);
             const contentLength = meta_data.ContentLength;
             const contentType = meta_data.ContentType;
@@ -96,9 +97,9 @@ const S3Ctrl = {
                 console.log('here1')
                 // size < 50MB
                 // Check data in cache ? data cache : data S3
-                const data_c = myCache.get(key);
-                if (data_c) {
-                    const data = JSON.parse(data_c);
+                const cacheData = myCache.get(key);
+                if (cacheData) {
+                    const data = JSON.parse(cacheData);
                     const buffer = Buffer.from(data.Body);
 
                     res.setHeader("Control-Cache", "public, max-age:3000");
@@ -145,6 +146,7 @@ const S3Ctrl = {
 
                         fs.createReadStream('./trash/output.mp4', { start: start, end: end }).pipe(res);
                     } else {
+                        console.log("-----> not cache");
                         //headers options
                         const headers = {
                             "Content-Range": `bytes ${start}-${end}/${contentLength}`,
@@ -211,46 +213,13 @@ const S3Ctrl = {
                     }
                 }
             }
-        } catch (error) {
-            res.status(500).json({ message: error.message });
+        } catch (err) {
+            if (err.code) {
+                res.status(err.code).json({ message: err.message });
+            }
+            res.status(500).json({ message: err.message });
         }
     }
-}
-
-/* Get metadata */
-var getMeta = async (bucketname, key) => {
-    console.log("bucketname: ", bucketname, "key: ", key);
-    return new Promise((resolve, reject) => {
-        try {
-            // redisServer.get(key, (err, data) => {
-            //   if (data) {
-            //     // console.log("Load metadata from cache");
-            //     const metaData = JSON.parse(data);
-            //     resolve(metaData);
-            //   } else {
-            console.log("Load metadata from S3");
-            s3Instance.headObject(
-                {
-                    Bucket: bucketname,
-                    Key: key,
-                    
-                },
-                (err, res) => {
-                    if (err) {
-                        console.log('err:', err);
-                        throw new Error({ message: err.statusCode + '/' + err.code + ' ' + err.message });
-                    };
-                    delete res.Metadata
-                    // redisServer.setex(key, 3000, metaData); //time: seconds
-                    resolve(res);
-                }
-            );
-            //   }
-            // });
-        } catch (error) {
-            reject(error);
-        }
-    });
 }
 
 module.exports = S3Ctrl;

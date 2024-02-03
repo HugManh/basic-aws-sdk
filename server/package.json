@@ -9,7 +9,7 @@
     "start": "node server.js"
   },
   "engines": {
-    "node": ">=10.x"
+    "node": "10.x"
   },
   "author": "manhdino04@gmail.com",
   "license": "MIT",

@@ -5,10 +5,7 @@ const cookieParser = require("cookie-parser");
 const fileUpload = require("express-fileupload");
 require("dotenv").config();
 
-/**
- *  List route
- */
-const RouteS3 = require("./routes/RouteS3");
+const routes = require("./routes");
 
 const app = express();
 
@@ -20,7 +17,7 @@ app.use(fileUpload());
 /**
  * Routers
  */
-app.use("/api", RouteS3);
+app.use("/", routes.routeS3);
 app.get("/", (req, res) => {
   res.json({
     message: "Hello Friend :)",

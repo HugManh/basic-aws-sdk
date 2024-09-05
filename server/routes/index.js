@@ -1,7 +1,7 @@
-const routeS3 = require('./routeS3')
+const AwsRouter = require('./aws')
 
 const routes = {
-    routeS3
+    AwsRouter
 }
 
 module.exports = routes

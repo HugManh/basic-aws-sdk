@@ -4,7 +4,8 @@ const { uploadMemory } = require('../middleware');
 
 // Uploads an asset 
 routers3
-  .post('/:bucketName/:resource_type/upload',AwsController.uploadResource);
+  .route('/:bucketName/:resource_type/upload')
+  .post(AwsController.uploadResource);
 // routers3
 //   .route('/:bucketName/:objectPath(*)?/:filename')
 //   .get(AwsController.getResource)

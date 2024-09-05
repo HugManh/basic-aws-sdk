@@ -40,17 +40,17 @@ const _uploadDisk = multer({
 const _uploadMemory = multer({
     storage: memoryStorage,
     limits: { fileSize: 50 * 1024 * 1024 }, // Giới hạn kích thước file (50 MB)
-    // fileFilter: (req, file, cb) => {
-    //     const filetypes = /jpeg|jpg|png|gif/;
-    //     const mimetype = filetypes.test(file.mimetype);
-    //     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    fileFilter: (req, file, cb) => {
+        const filetypes = /jpeg|jpg|png|gif/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
 
-    //     if (mimetype && extname) {
-    //         return cb(null, true);
-    //     } else {
-    //         cb(new Error('Only images are allowed!'));
-    //     }
-    // }
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb(new Error('Only images are allowed!'));
+        }
+    }
 });
 
 const uploadMem = _uploadMemory.single('file')

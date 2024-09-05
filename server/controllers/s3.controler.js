@@ -1,20 +1,19 @@
 const fs = require('fs-extra');
 const { client } = require('../config');
-const { uploadMem, uploadDisk } = require('../middleware');
-const { MulterError } = require('multer');
-require("dotenv").config();
+const { uploadMem } = require('../middleware');
 const isProd = false
 
 const AwsController = {
-    uploadResource: (req, res) => {
-        uploadDisk(req, res, err => {
+    uploadResource: async (req, res) => {
+        uploadMem(req, res, err => {
             if (err) {
                 return res.status(404).json({ success: false, error: { code: err.code, message: err.message, stack: !isProd ? err.stack : null } });
             } else if (!req.file?.buffer) {
                 return res.status(400).json({ success: false, error: { message: 'File data not found' } });
             }
-            const { originalname, size } = req.file;
-            const value = { originalname, size };
+
+            const { mimetype, originalname, size } = req.file;
+            const value = { mimetype, originalname, size };
             res.status(200).json({ success: true, data: !isProd ? value : null });
         })
     },

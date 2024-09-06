@@ -6,8 +6,5 @@ const { uploadMemory } = require('../middleware');
 routers3
   .route('/:bucketName/:resource_type/upload')
   .post(AwsController.uploadResource);
-// routers3
-//   .route('/:bucketName/:objectPath(*)?/:filename')
-//   .get(AwsController.getResource)
 
 module.exports = routers3

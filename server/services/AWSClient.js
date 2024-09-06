@@ -9,10 +9,10 @@ class AwsClient {
         this._client = new AWS.S3(this._s3Params);
     }
 
-    // _createAwsKey(requestObjectKey) {
-    //     const now = new Date();
-    //     return `${now.toLocaleDateString("zh-Hans-CN")}/${requestObjectKey}`;
-    // }
+    createAwsKey(requestObjectKey) {
+        const now = new Date();
+        return `${now.toLocaleDateString("zh-Hans-CN")}/${requestObjectKey}`;
+    }
 
     async objectHead(keyContext) {
         const awskey = keyContext.objectKey
@@ -34,18 +34,16 @@ class AwsClient {
         const params = {
             Bucket: keyContext.bucketName,
             Key: awskey,
+            ContentType: keyContext.mimetype
         }
-        try {
-            return this._client.getSignedUrlPromise(operation, params).then(val => val);
-        } catch (err) {
-            throw new Error(err);
-        }
+        return this._client.getSignedUrlPromise(operation, params);
     }
 
     async get(objectGetInfo, range) {
-        const { objectKey, bucketname } = objectGetInfo;
+        const { objectKey, bucketName } = objectGetInfo;
+        console.log(objectGetInfo)
         const params = {
-            Bucket: bucketname,
+            Bucket: bucketName,
             Key: objectKey,
             Range: range ? `bytes=${range[0]}-${range[1]}` : null,
         };

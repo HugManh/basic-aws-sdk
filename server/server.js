@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const routes = require('./routes');
+const AwsController = require('./controllers/s3.controler');
 
 const app = express();
 
@@ -27,6 +28,11 @@ app.use((err, req, res, next) => {
   res.status(500).send('Server error');
 });
 
+app.get('/:bucketName/:objectPath(*)?/:fileName', AwsController.getResource);
+app.post('/save-code', (req, res) => {
+  const { code, filename } = req.body;
+  return res.status(200).json({ success: true, data: { code, filename } })
+})
 app.get('/', (req, res) => {
   res.json({
     message: 'Hello Friend :)',

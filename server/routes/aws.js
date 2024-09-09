@@ -1,5 +1,5 @@
 const routerAws = require('express').Router();
-const AwsController = require('../controllers/s3.controller');
+const AwsController = require('../controllers/aws.controller');
 
 // Uploads an asset 
 routerAws

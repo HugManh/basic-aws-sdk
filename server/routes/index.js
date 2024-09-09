@@ -1,4 +1,4 @@
-const AwsController = require('../controllers/s3.controller');
+const AwsController = require('../controllers/aws.controller');
 const AwsRouter = require('./aws')
 const CodeRouter = require('./code')
 

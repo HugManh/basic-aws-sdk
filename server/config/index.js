@@ -2,7 +2,7 @@ const fs = require("fs");
 const { parseConfig } = require('./aws');
 const { DIR_LIB_AWS } = require('./contants');
 
-let client;
+const client = parseConfig();
 
 function checkDirectory() {
     try {
@@ -19,8 +19,6 @@ function checkDirectory() {
 
 function loadConfig() {
     try {
-        client = parseConfig()
-
         checkDirectory()
     } catch (err) {
         console.error(err)

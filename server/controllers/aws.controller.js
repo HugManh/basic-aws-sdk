@@ -21,7 +21,7 @@ const AwsController = {
                     const objectKey = client.createAwsKey(originalname)
                     const keyContext = { bucketName, objectKey, mimetype };
                     const presignedUrl = await client.getSignedUrl('putObject', keyContext)
-
+                    console.log(presignedUrl)
                     const image = sharp(buffer); // path to the stored image
                     const metadata = await image.metadata()
                     const response = await fetch(presignedUrl, {
@@ -34,7 +34,7 @@ const AwsController = {
 
                     if (response.ok) {
                         const { format, width, height, size } = metadata
-                        const url = `http://localhost:8000/${bucketName}/${objectKey}`
+                        const url = `http://localhost:8333/${bucketName}/${objectKey}`
                         const value = { bucketName, objectKey, mimetype, format, width, height, size, originalname, resource_type, url, }
                         return res.status(200).json({ success: true, data: !isProd ? value : null })
                     }

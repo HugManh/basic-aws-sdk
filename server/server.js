@@ -16,7 +16,7 @@ app.use(cookieParser());
 
 routes.useRoutes(app)
 
-const port = process.env.PORT || 8000;
+const port = process.env.SERVER_PORT || 80;
 
 // Load config và khởi động server
 const startServer = () => {

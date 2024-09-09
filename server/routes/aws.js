@@ -1,10 +1,9 @@
-const routers3 = require('express').Router();
-const AwsController = require('../controllers/s3.controler');
-const { uploadMemory } = require('../middleware');
+const routerAws = require('express').Router();
+const AwsController = require('../controllers/s3.controller');
 
 // Uploads an asset 
-routers3
+routerAws
   .route('/:bucketName/:resource_type/upload')
   .post(AwsController.uploadResource);
 
-module.exports = routers3
+module.exports = routerAws

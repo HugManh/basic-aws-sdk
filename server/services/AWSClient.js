@@ -5,7 +5,6 @@ class AwsClient {
         this.clientType = 'aws_s3';
         this.type = 'AWS';
         this._s3Params = config.s3Params;
-        this._awsBucketName = config.bucketName;
         this._client = new AWS.S3(this._s3Params);
     }
 

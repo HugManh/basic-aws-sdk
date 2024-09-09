@@ -3,7 +3,7 @@ const { client } = require('../config');
 const { uploadMem } = require('../middleware');
 const path = require('path');
 const sharp = require('sharp');
-const isProd = false
+const { isProd } = require('../config/contants');
 
 const AwsController = {
     uploadResource: async (req, res) => {

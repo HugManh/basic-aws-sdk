@@ -1,5 +1,5 @@
 const AwsClient = require("../services/AWSClient");
-
+require("dotenv").config();
 
 function parseConfig(config) {
   const clients = {}
@@ -12,8 +12,9 @@ function parseConfig(config) {
       s3ForcePathStyle: true,
       // signatureVersion: "v4"
     },
-    bucketName: 'yyyyyyy'
   }
+
+  console.log(clientConfig)
 
   clients['aws'] = new AwsClient(clientConfig)
   return clients['aws']

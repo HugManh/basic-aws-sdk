@@ -2,12 +2,17 @@ const path = require('path')
 const fs = require('fs');
 const zlib = require('zlib');
 const mime = require('mime-types');
-const { DIR_LIB_AWS } = require('../config/contants');
+const { DIR_LIB_AWS, isProd } = require('../config/contants');
 
 const CodeController = {
     createCode: async (req, res) => {
         const { language } = req.params;
         const { code, filename } = req.body;
+
+        if (language !== "js") {
+            const lang = getProgrammingLanguageName(language)
+            return res.status(400).json({ message: lang !== 'Unknown' ? `Dont support ${lang}` : `Unknown programming language symbol, #${language}#` });
+        }
 
         // Kiểm tra nếu không có code hoặc filename
         if (!code || !filename) {
@@ -41,7 +46,6 @@ const CodeController = {
             console.error('Lỗi khi ghi file:', err);
             return res.status(404).json({ success: false, error: { code: err.code, message: err.message, stack: !isProd ? err.stack : null } });
         });
-
     },
     showCode: async (req, res) => {
         const { language } = req.params;
@@ -146,6 +150,31 @@ const CodeController = {
     }
 
 }
+
+// Đối tượng ánh xạ ký hiệu ngôn ngữ lập trình đến tên ngôn ngữ
+const programmingLanguageMap = {
+    'js': 'JavaScript',
+    'py': 'Python',
+    'java': 'Java',
+    'cpp': 'C++',
+    'c': 'C',
+    'rb': 'Ruby',
+    'go': 'Go',
+    'php': 'PHP',
+    'swift': 'Swift',
+    'kt': 'Kotlin',
+    'ts': 'TypeScript',
+    // Thêm các ký hiệu ngôn ngữ lập trình khác nếu cần
+};
+
+/**
+ * Hàm lấy tên ngôn ngữ lập trình dựa vào ký hiệu
+ * @param {string} symbol - Ký hiệu ngôn ngữ lập trình (ví dụ: 'js', 'py', 'java')
+ * @returns {string} - Tên ngôn ngữ lập trình tương ứng hoặc thông báo lỗi nếu không tìm thấy
+ */
+const getProgrammingLanguageName = (symbol) => {
+    return programmingLanguageMap[symbol] || 'Unknown';
+};
 
 /**
  * Hàm để chuẩn hóa tên file, đảm bảo kết thúc bằng .js

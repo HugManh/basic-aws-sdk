@@ -4,6 +4,7 @@ const fs = require('fs');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const routes = require('./routes');
+const { loadConfig } = require('./config');
 require('dotenv').config();
 
 
@@ -15,12 +16,21 @@ app.use(cookieParser());
 
 routes.useRoutes(app)
 
-/**
- * Create server
- */
 const port = process.env.PORT || 8000;
-const server = http.createServer(app);
 
-server.listen(port, async () => {
-  console.log(`Server is running on port ${port}`);
-});
+// Load config và khởi động server
+const startServer = () => {
+  const server = http.createServer(app);
+  server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+    // console.log(`Database host: ${config.db.host}`);
+  });
+};
+
+const bootstrap = () => {
+  loadConfig()
+}
+
+bootstrap()
+// Khởi tạo server
+startServer();

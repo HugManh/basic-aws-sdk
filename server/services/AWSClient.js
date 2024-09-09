@@ -1,4 +1,5 @@
 const AWS = require("aws-sdk");
+const aws = require("../lib/aws");
 
 class AwsClient {
     constructor(config) {
@@ -13,32 +14,23 @@ class AwsClient {
         return `${now.toLocaleDateString("zh-Hans-CN")}/${requestObjectKey}`;
     }
 
-    async objectHead(keyContext) {
-        const awskey = keyContext.objectKey
-        const params = {
-            Bucket: keyContext.bucketName,
-            Key: awskey
-        };
-
+    async getSignedUrl(operation, objectGetInfo) {
+        console.error("objectGetInfo ", objectGetInfo)
+        const { objectKey, bucketName, mimetype } = objectGetInfo;
         try {
-            return await this._client.headObject(params).promise();
+            const awskey = objectKey
+            const params = {
+                Bucket: bucketName,
+                Key: awskey,
+                ContentType: mimetype
+            }
+            return await aws.getSignedUrl(this._client, operation, params);
         } catch (err) {
             throw new Error(err);
         }
     }
 
-    async getSignedUrl(operation, keyContext) {
-        console.error("keyContext ", keyContext)
-        const awskey = keyContext.objectKey
-        const params = {
-            Bucket: keyContext.bucketName,
-            Key: awskey,
-            ContentType: keyContext.mimetype
-        }
-        return this._client.getSignedUrlPromise(operation, params);
-    }
-
-    async get(objectGetInfo, range) {
+    async getObject(objectGetInfo, range) {
         const { objectKey, bucketName } = objectGetInfo;
         console.log(objectGetInfo)
         const params = {
@@ -48,7 +40,7 @@ class AwsClient {
         };
 
         try {
-            return await this._client.getObject(params).promise();
+            return await aws.getObject(this._client, params);
         } catch (err) {
             throw new Error(err);
         }

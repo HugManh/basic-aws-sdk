@@ -7,6 +7,7 @@ const { isProd } = require('../config/contants');
 
 const AwsController = {
     uploadResource: async (req, res) => {
+        const { is_presigned_url } = req.query;
         const { bucketName, resource_type } = req.params;
         switch (resource_type) {
             case 'image':
@@ -21,7 +22,11 @@ const AwsController = {
                     const objectKey = client.createAwsKey(originalname)
                     const keyContext = { bucketName, objectKey, mimetype };
                     const presignedUrl = await client.getSignedUrl('putObject', keyContext)
-                    console.log(presignedUrl)
+                    if (is_presigned_url) {
+                        const value = { bucketName, objectKey, mimetype, originalname, resource_type, presignedUrl: presignedUrl || "undefined" }
+                        return res.status(200).json({ success: true, data: !isProd ? value : null })
+                    }
+
                     const image = sharp(buffer); // path to the stored image
                     const metadata = await image.metadata()
                     const response = await fetch(presignedUrl, {
@@ -35,7 +40,7 @@ const AwsController = {
                     if (response.ok) {
                         const { format, width, height, size } = metadata
                         const url = `http://localhost:8333/${bucketName}/${objectKey}`
-                        const value = { bucketName, objectKey, mimetype, format, width, height, size, originalname, resource_type, url, }
+                        const value = { bucketName, objectKey, mimetype, format, width, height, size, originalname, resource_type, url }
                         return res.status(200).json({ success: true, data: !isProd ? value : null })
                     }
 
@@ -64,7 +69,7 @@ const AwsController = {
                 objectKey
             }
 
-            const data = await client.get(objectGetInfo);
+            const data = await client.getObject(objectGetInfo);
             res.end(data.Body);
         } catch (err) {
             res.status(400).json({ success: false, error: { code: err.code, message: err.message, stack: !isProd ? err.stack : 'File data not found' } });

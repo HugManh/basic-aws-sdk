@@ -1,14 +1,45 @@
-import React from "react";
-import CodeMirror from "@uiw/react-codemirror";
-import { vscodeDark } from "@uiw/codemirror-theme-vscode";
-import { javascript } from '@codemirror/lang-javascript';
-import { xcodeLight, xcodeDark } from '@uiw/codemirror-theme-xcode';
+import React, { useEffect, useState } from 'react'
+import './styles/app.css'
+import * as api from './api';
+import { Editor } from './components/Editor'
+import { ListImage, UploadImage } from './components/Image'
+
 function App() {
-  const [value, setValue] = React.useState("console.log('hello world!');");
-  const onChange = React.useCallback((val, viewUpdate) => {
-    console.log('val:', val);
-    setValue(val);
+  const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    getListImage();
   }, []);
-  return <CodeMirror value={value} height="200px" theme={xcodeDark} extensions={[javascript({ jsx: true })]} onChange={onChange} />;
+
+  const getListImage = async () => {
+    try {
+      const data = await api.getListImage("bizflydev")
+      console.log(data);
+      setImages(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div className="App">
+      <div
+        style={{
+          display: "flex",
+          margin: "0px 100px",
+          flexDirection: "column",
+        }}
+      >
+        <Editor />
+        <h1>Image Upload</h1>
+        {/* Component upload hình ảnh */}
+        <UploadImage />
+
+        {/* Component hiển thị danh sách hình ảnh */}
+        <ListImage images={images} />
+      </div>
+    </div>
+  )
 }
-export default App;
+
+export default App

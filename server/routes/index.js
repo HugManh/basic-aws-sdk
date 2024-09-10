@@ -1,12 +1,12 @@
-const AwsController = require('../controllers/aws.controller');
-const AwsRouter = require('./aws')
+const AwsController = require('../controllers/assets.controller');
+const AssetRouter = require('./assets')
 const CodeRouter = require('./code')
 
 function useRoutes(app) {
     /**
  * Routers
  */
-    app.use('/api', AwsRouter);
+    app.use('/api', AssetRouter);
     app.use('/code', CodeRouter)
     app.use((err, req, res, next) => {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -19,11 +19,6 @@ function useRoutes(app) {
     });
 
     app.get('/:bucketName/:objectPath(*)?/:fileName', AwsController.getResource);
-    app.get('/', (req, res) => {
-        res.json({
-            message: 'Hello Friend :)',
-        });
-    });
 }
 
 module.exports = { useRoutes }

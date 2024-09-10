@@ -4,11 +4,11 @@ export const ListImage = ({ images }) => {
 
 
   return (
-    <div className="gallery">
+    <div className="image-gallery">
       {console.log(images.length)}
       {images.map((data) => {
         return (
-          <div className="pics" key={data.id}>
+          <div key={data.id} className="image-card">
             <img src={data.url} alt={data.name} className="gallery_img" />
           </div>
         );

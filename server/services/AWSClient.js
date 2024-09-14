@@ -1,5 +1,5 @@
 const AWS = require("aws-sdk");
-const aws = require("../lib/aws");
+const aws = require("../lib");
 
 class AwsClient {
     constructor(config) {

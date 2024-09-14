@@ -7,14 +7,14 @@ const { isProd, DIR_DATA } = require('../config/contants');
 
 const AssetsController = {
     uploadAssets: async (req, res) => {
-        const { is_presigned_url } = req.query;
         const { bucketName, resource_type } = req.params;
         switch (resource_type) {
             case 'image':
                 uploadMem(req, res, async (err) => {
                     if (err) {
                         return res.status(404).json({ success: false, error: { code: err.code, message: err.message, stack: !isProd ? err.stack : null } });
-                    } else if (!req.file?.buffer) {
+                    } else if (!req.file?.buffer) { // node >=14
+                        // else if (!req.file || !req.file.buffer) {
                         return res.status(400).json({ success: false, error: { message: 'File data not found' } });
                     }
 
@@ -22,10 +22,6 @@ const AssetsController = {
                     const objectKey = client.createAwsKey(originalname)
                     const keyContext = { bucketName, objectKey, mimetype };
                     const presignedUrl = await client.getSignedUrl('putObject', keyContext)
-                    if (is_presigned_url) {
-                        const value = { bucketName, objectKey, mimetype, originalname, resource_type, presignedUrl: presignedUrl || "undefined" }
-                        return res.status(200).json({ success: true, data: !isProd ? value : null })
-                    }
 
                     const image = sharp(buffer); // path to the stored image
                     const metadata = await image.metadata()
@@ -41,7 +37,7 @@ const AssetsController = {
                         const { format, width, height, size } = metadata
                         const url = `http://localhost:8333/${bucketName}/${objectKey}`
 
-                        const safeFilename = `${resource_type}.json`
+                        const safeFilename = `assets.json`
                         const db = path.join(DIR_DATA, safeFilename)
                         // Object mới cần thêm vào mảng JSON
                         const newObject = {
@@ -49,6 +45,9 @@ const AssetsController = {
                             id: response.headers.get('x-amz-request-id'),
                             name: originalname,
                             bucketName,
+                            mimetype,
+                            resource_type,
+                            format, width, height, size,
                             timestamp: new Date().toISOString()
                         };
                         const message = await appendObjectToJSONFile(db, newObject);
@@ -91,14 +90,15 @@ const AssetsController = {
     listAssets: async (req, res) => {
         try {
             const { bucketName, resource_type } = req.params;
-            const safeFilename = `${resource_type}.json`
+            const safeFilename = `assets.json`
             const db = path.join(DIR_DATA, safeFilename)
             const data = await readJSONFile(db)
             // Kiểm tra nếu dữ liệu là mảng
             if (!Array.isArray(data)) {
                 return res.status(404).json({ success: false, error: { message: 'Dữ liệu JSON không phải là mảng' } });
             }
-            return res.status(200).json({ success: true, data: !isProd ? data : null })
+            const filteredData = data.filter((it) => it.resource_type === resource_type)
+            return res.status(200).json({ success: true, data: !isProd ? filteredData : null })
         } catch (err) {
             return res.status(404).json({ success: false, error: { code: err.code, message: err.message, stack: !isProd ? err.stack : null } });
         }

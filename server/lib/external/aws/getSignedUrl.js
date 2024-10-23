@@ -1,18 +1,21 @@
-require("dotenv").config();
+require("dotenv").config({ path: `.env.dev` })
 const AWS = require("aws-sdk");
-const { processFile, defaultFilePath } = require('./file');
+const { processFile, } = require('./file');
+const { dataLocal } = require("../../../config/contants");
 
 const config = {
     s3Params: {
         endpoint: process.env.AWS_END_POINT,
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        sslEnabled: false,
+        sslEnabled: true,
         s3ForcePathStyle: true,
-        // signatureVersion: "v4"
+        signatureVersion: "v4",
+        region: 'test'
     },
     bucketName: process.env.AWS_BUCKET_NAME
 }
+console.log("config", config)
 
 const client = new AWS.S3(config.s3Params);
 
@@ -33,13 +36,14 @@ const getSignedUrlPromise = async (operation, params) => {
 
 // Main function
 const main = async () => {
-    const fileInfo = processFile(defaultFilePath);
+    const fileInfo = processFile(dataLocal);
     const { metadata } = fileInfo;
     const awsKey = createAwsKey(metadata.fileName)
     const params = {
         Bucket: config.bucketName,
         Key: awsKey,
         Expires: 60 * 60,
+        ContentType: metadata.mimetype,
     };
     const url = await getSignedUrlPromise('putObject', params);
     console.log({ success: true, level: "info", message: 'URL put object', url, timestamp: new Date().toISOString() })

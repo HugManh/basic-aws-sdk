@@ -1,37 +1,59 @@
-const fs = require("fs-extra");
-const path = require("path");
+require("dotenv").config({ path: `.env.local` })
 const axios = require('axios');
 var _ = require('lodash');
-const { s3 } = require("../../../config");
-const { metadata, createS3Key } = require("../../utils/aws");
-const { defaultFilePath } = require("./file");
+const AWS = require("aws-sdk");
+const { processFile, } = require('./file');
+const { dataLocal } = require("../../../config/contants");
 
-const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-const bucketName = process.env.BUCKET_NAME || "yyyyyyyyyyyyyy";
+const config = {
+    s3Params: {
+        endpoint: process.env.AWS_END_POINT,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        sslEnabled: true,
+        s3ForcePathStyle: true,
+        signatureVersion: "v4",
+        region: 'test'
+    },
+    bucketName: process.env.AWS_BUCKET_NAME
+}
+console.log("config", config)
+
+const client = new AWS.S3(config.s3Params);
+
+const createAwsKey = (name) => {
+    let now = new Date();
+    return now.toLocaleDateString("zh-Hans-CN") + "/" + name
+}
+
+
+const CHUNK_SIZE = 50 * 1024; // 5MB
+// const CHUNK_SIZE = 2 * 1024 * 1024; // 5MB
+const bucketName = config.bucketName;
 
 async function multipartUpload(awsKey, metadata, buffer, useUrl = false) {
     try {
         const chunkPromises = [];
         let parts = []
 
-        console.log("createMultipartUpload starting")
+        console.log("[... createMultipartUpload starting]")
         const upload = await startUpload(awsKey, metadata)
-        console.log("createMultipartUpload ended")
+        console.log("[... createMultipartUpload ended]")
         const uploadId = upload.UploadId
 
         // Split the file into chunks and upload each part
-        const totalParts = Math.ceil(mimedata.contentLength / CHUNK_SIZE);
-        console.log({ uploadId, totalParts, mimedata });
+        const totalParts = Math.ceil(metadata.size / CHUNK_SIZE);
+        console.log({ uploadId, totalParts, metadata });
 
         if (useUrl) {
-            const partSignedUrlList = await getMultipartPreSignedUrls(objectKey, uploadId, totalParts)
+            const partSignedUrlList = await getMultipartPreSignedUrls(awsKey, uploadId, totalParts)
             for (let idx = 1; idx <= totalParts; idx++) {
                 const start = (idx - 1) * CHUNK_SIZE;
-                const end = Math.min(start + CHUNK_SIZE, mimedata.contentLength);
+                const end = Math.min(start + CHUNK_SIZE, metadata.size);
                 const chunk = buffer.slice(start, end)
                 const uploadPart = partSignedUrlList.shift()
 
-                console.log({ uploadId, PartNumber: idx, range: start + "-" + end + "/" + mimedata.contentLength, uploadPart });
+                console.log({ uploadId, PartNumber: idx, range: start + "-" + end + "/" + metadata.size, uploadPart });
                 chunkPromises.push(
                     sendChunk(idx, chunk, uploadPart)
                         .then((data) => {
@@ -46,11 +68,11 @@ async function multipartUpload(awsKey, metadata, buffer, useUrl = false) {
         } else {
             for (let idx = 1; idx <= totalParts; idx++) {
                 const start = (idx - 1) * CHUNK_SIZE;
-                const end = Math.min(start + CHUNK_SIZE, mimedata.contentLength);
+                const end = Math.min(start + CHUNK_SIZE, metadata.size);
                 const chunk = buffer.slice(start, end)
 
-                const part = await uploadPart(objectKey, idx, uploadId, chunk)
-                console.log({ uploadId, PartNumber: idx, range: start + "-" + end + "/" + mimedata.contentLength, part });
+                const part = await uploadPart(awsKey, idx, uploadId, chunk)
+                console.log({ uploadId, PartNumber: idx, range: start + "-" + end + "/" + metadata.size, part });
                 parts.push({
                     // removing the " enclosing carachters from
                     // the raw ETag
@@ -61,14 +83,14 @@ async function multipartUpload(awsKey, metadata, buffer, useUrl = false) {
         }
 
         // Complete the multipart upload
-        const complete = await completeUpload(objectKey, uploadId, parts)
+        const complete = await completeUpload(awsKey, uploadId, parts)
         console.log("complete ", complete)
 
         const params = {
             Bucket: bucketName,
             Key: complete.Key,
         };
-        const url = await s3.getSignedUrlPromise("getObject", params)
+        const url = await client.getSignedUrlPromise("getObject", params)
         console.log("url ", url)
 
     } catch (error) {
@@ -76,14 +98,14 @@ async function multipartUpload(awsKey, metadata, buffer, useUrl = false) {
     }
 }
 
-async function startUpload(key, mimedata) {
+async function startUpload(key, metadata) {
     const params = {
         Bucket: bucketName,
         Key: key,
-        ContentType: mimedata.contentType,
+        ContentType: metadata.contentType,
     };
 
-    return await s3.createMultipartUpload(params).promise()
+    return await client.createMultipartUpload(params).promise()
 }
 
 
@@ -96,7 +118,7 @@ async function uploadPart(key, partNumber, uploadId, buffer) {
         Body: buffer
     };
 
-    return await s3.uploadPart(params).promise()
+    return await client.uploadPart(params).promise()
 }
 
 async function getMultipartPreSignedUrls(key, uploadId, parts) {
@@ -110,7 +132,7 @@ async function getMultipartPreSignedUrls(key, uploadId, parts) {
 
     for (let idx = 0; idx < parts; idx++) {
         promises.push(
-            s3.getSignedUrlPromise("uploadPart", {
+            client.getSignedUrlPromise("uploadPart", {
                 ...multipartParams,
                 PartNumber: idx + 1,
             }),
@@ -136,7 +158,7 @@ async function completeUpload(key, uploadId, parts) {
     };
 
     console.log("[multipartUpload][completeUpload] params ", { uploadId, Parts: params.MultipartUpload.Parts });
-    return await s3.completeMultipartUpload(params).promise();
+    return await client.completeMultipartUpload(params).promise();
 }
 
 function sendChunk(index, chunk, part) {
@@ -192,12 +214,10 @@ function uploadChunk(file, part) {
 
 // Main function
 const main = async () => {
-    const fileInfo = processFile(defaultFilePath);
+    const fileInfo = processFile(dataLocal, true);
     const { metadata, buffer } = fileInfo;
     const awsKey = createAwsKey(metadata.fileName)
     await multipartUpload(awsKey, metadata, buffer)
-
-    return data;
 };
 
 main().catch((err) => {

@@ -1,7 +1,8 @@
-require("dotenv").config();
+require("dotenv").config({ path: `.env.local` })
 const AWS = require("aws-sdk");
 const { processFile, defaultFilePath } = require('./file');
-
+const { dataLocal } = require("../../../config/contants");
+const env = false
 const config = {
     s3Params: {
         endpoint: process.env.AWS_END_POINT,
@@ -9,7 +10,7 @@ const config = {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         sslEnabled: false,
         s3ForcePathStyle: true,
-        // signatureVersion: "v4"
+        signatureVersion: "v4"
     },
     bucketName: process.env.AWS_BUCKET_NAME
 }
@@ -33,22 +34,25 @@ const getSignedUrlPromise = async (operation, params) => {
 
 // Main function
 const main = async () => {
-    const fileInfo = processFile(defaultFilePath);
+    const fileInfo = processFile(dataLocal);
     const { metadata } = fileInfo;
-    const awsKey = createAwsKey(metadata.fileName)
+    let awsKey = createAwsKey(metadata.fileName)
+    if (env) {
+        awsKey = "encrypt-dev/" + awsKey
+    }
     console.log(config.s3Params);
     const params1 = {
         Bucket: config.bucketName,
         Key: awsKey,
     }
     const data = await client.getObject(params1).promise()
-    const params2 = {
-        Bucket: config.bucketName,
-        Key: awsKey,
-    }
-    const data2 = await client.getObject(params2).promise()
     console.log(data)
-    console.log(data2)
+    // const params2 = {
+    //     Bucket: 'dino1',
+    //     Key: awsKey,
+    // }
+    // const data2 = await client.getObject(params2).promise()
+    // console.log(data2)
     // const params = {
     //     Bucket: config.bucketName,
     //     Key: awsKey,

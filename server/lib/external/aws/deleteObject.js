@@ -1,20 +1,30 @@
 
-const prompt = require('prompt-sync')({ sigint: true });
-const s3 = require("../../s3/config")
+require("dotenv").config({ path: `.env.prod` })
+const AWS = require("aws-sdk");
 
-const objectKey = prompt('What is your key?: ');
-console.log(`Hey there ${objectKey}`);
+const config = {
+    s3Params: {
+        endpoint: process.env.AWS_END_POINT,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        sslEnabled: false,
+        s3ForcePathStyle: true,
+        signatureVersion: "v4"
+    },
+    bucketName: process.env.AWS_BUCKET_NAME
+}
 
-// Define the parameters for the upload
-// If ContentType empty, then octet-stream is default type
-const bucketName = process.env.BUCKET_NAME || "dino-bucket";
+const client = new AWS.S3(config.s3Params);
+
+const key = "fzWcDFq9nv6DKPm8/test.json"
 const params = {
-    Bucket: bucketName,
-    Key: objectKey,
+    Bucket: config.bucketName,
+    Key: key,
+    VersionId: "CSHES8vxZtrQu9fxLXeJ-yLJnAy9.z8",
 };
 
 // Delete the file to S3
-s3.deleteObject(params, (err, data) => {
+client.deleteObject(params, (err, data) => {
     if (err) {
         console.error('Delete Object:', err);
     } else {

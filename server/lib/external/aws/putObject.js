@@ -105,7 +105,7 @@
 
 
 
-require("dotenv").config({ path: `.env.dev` });
+require("dotenv").config({ path: `.env.prod` });
 const AWS = require("aws-sdk");
 const crypto = require('crypto');
 const { dataLocal } = require("../../../config/contants");
@@ -123,7 +123,7 @@ const config = {
     },
     bucketName: process.env.AWS_BUCKET_NAME
 }
-
+console.log(config.s3Params)
 const client = new AWS.S3(config.s3Params);
 
 // const fileInfo = processFile(dataLocal, true);
@@ -135,7 +135,7 @@ const client = new AWS.S3(config.s3Params);
 // const awsKey = createAwsKey(metadata.fileName)
 
 const awsKey = "fzWcDFq9nv6DKPm8/test.json"
-const buffer = "tesstst"
+const buffer = "test"
 
 const uploadParams = {
     Bucket: config.bucketName,

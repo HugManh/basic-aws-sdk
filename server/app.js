@@ -4,6 +4,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import routes from './routes';
+import path from 'path';
 
 const app = express();
 

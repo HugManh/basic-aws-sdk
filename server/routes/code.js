@@ -1,21 +1,17 @@
-const routerCode = require('express').Router();
+import { Router } from 'express';
 const CodeController = require('../controllers/code.controller');
+const router = new Router();
 
 // Create a code file
-routerCode
-    .route('/:language/create')
-    .post(CodeController.createCode);
+router.post('/:language/create', CodeController.createCode);
 // Show a code of file
-routerCode
-    .route('/:language/show')
-    .get(CodeController.showCode);
+router.get('/:language/show', CodeController.showCode);
 // // Update a code in file
-// routerCode
+// router
 //     .route('/:language/update')
 //     .put(CodeController.createCode);
 // Delete code file
-routerCode
-    .route('/:language/delete')
-    .delete(CodeController.deleteFiles);
+router.delete('/:language/delete', CodeController.deleteFiles);
 
-module.exports = routerCode
+
+export default router;

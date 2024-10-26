@@ -4,7 +4,7 @@ const { DIR_LIB_AWS } = require('./contants');
 
 const client = parseConfig();
 
-function checkDirectory() {
+function loadConfig() {
     try {
         // Tạo thư mục nếu chưa tồn tại
         fs.mkdir(DIR_LIB_AWS, { recursive: true }, (err, result) => {
@@ -17,9 +17,8 @@ function checkDirectory() {
     }
 }
 
-checkDirectory()
+loadConfig()
 
 module.exports = {
-    loadConfig,
     client
 }

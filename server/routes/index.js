@@ -1,10 +1,11 @@
-const AwsController = require('../controllers/assets.controller');
-const AssetRouter = require('./assets')
-const CodeRouter = require('./code')
+import { Router } from 'express';
+import AwsController from '../controllers/assets.controller';
+// import assets from './assets'
+import coder from './code'
 const router = new Router();
 
-router.use('/api', AssetRouter);
-router.use('/code', CodeRouter)
+// router.use('/api', assets);
+router.use('/code', coder)
 router.use((err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).send('File too large');

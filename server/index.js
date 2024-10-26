@@ -4,6 +4,18 @@ import http from 'http';
 // import path from 'path';
 import app from './app';
 
+// Hàm lấy và log tất cả các route
+function listEndpoints(app) {
+  console.log('Danh sách các API đang có:');
+  app._router.stack.forEach((middleware) => {
+    if (middleware.route) { // Route middleware
+      const methods = Object.keys(middleware.route.methods).map(m => m.toUpperCase());
+      const path = middleware.route.path;
+      console.log(`${methods.join(', ')} ${path}`);
+    }
+  });
+}
+
 // Start http server
 const HTTP_PORT = normalizePort(process.env.PORT || 8000);
 app.set('port', HTTP_PORT);
@@ -24,6 +36,7 @@ function onListening() {
   let addr = this.address();
   let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
   console.info('Web server listening on ' + bind);
+  listEndpoints(app)
 }
 
 function normalizePort(val) {

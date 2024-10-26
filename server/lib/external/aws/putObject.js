@@ -107,9 +107,6 @@
 
 require("dotenv").config({ path: `.env.prod` });
 const AWS = require("aws-sdk");
-const crypto = require('crypto');
-const { dataLocal } = require("../../../config/contants");
-const { processFile } = require("./file");
 
 const config = {
     s3Params: {
@@ -119,7 +116,7 @@ const config = {
         sslEnabled: true,
         s3ForcePathStyle: true,
         signatureVersion: "v4",
-        region: 'test' 
+        region: 'test'
     },
     bucketName: process.env.AWS_BUCKET_NAME
 }

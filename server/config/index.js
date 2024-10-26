@@ -17,13 +17,7 @@ function checkDirectory() {
     }
 }
 
-function loadConfig() {
-    try {
-        checkDirectory()
-    } catch (err) {
-        console.error(err)
-    }
-}
+checkDirectory()
 
 module.exports = {
     loadConfig,

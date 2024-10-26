@@ -2,10 +2,10 @@
   "name": "s3-aws-server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start:prod": "node server.js",
-    "start:dev": "nodemon server.js",
+    "start:prod": "node index.js",
+    "start:dev": "nodemon --exec babel-node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "manh2909@gmail.com",
@@ -28,6 +28,11 @@
     "zlib": "^1.0.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/node": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "babel-plugin-inline-dotenv": "^1.7.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "nodemon": "^3.0.3"
   }
 }

@@ -1,5 +1,4 @@
 const AWS = require("aws-sdk");
-const aws = require("../lib");
 
 class AwsClient {
     constructor(config) {
@@ -24,7 +23,7 @@ class AwsClient {
                 Key: awskey,
                 ContentType: mimetype
             }
-            return await aws.getSignedUrl(this._client, operation, params);
+            return await this._client.getSignedUrlPromise(operation, params);
         } catch (err) {
             throw new Error(err);
         }
@@ -32,7 +31,6 @@ class AwsClient {
 
     async getObject(objectGetInfo, range) {
         const { objectKey, bucketName } = objectGetInfo;
-        console.log(objectGetInfo)
         const params = {
             Bucket: bucketName,
             Key: objectKey,
@@ -40,7 +38,7 @@ class AwsClient {
         };
 
         try {
-            return await aws.getObject(this._client, params);
+            return await this._client.getObject(params).promise();
         } catch (err) {
             throw new Error(err);
         }

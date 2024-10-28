@@ -1,11 +1,13 @@
 import axios from 'axios';
 
 let debug;
-let baseURL = process.env.API_URL|| 'http://localhost:8333';
+let baseURL = process.env.API_URL || 'http://localhost:8000';
 
 let headers = {
 };
-export default function (options) {
+
+// eslint-disable-next-line import/no-anonymous-default-export
+export default (options) => {
     if (debug) {
         options.params = options.params || {};
         options.params.debug = true;

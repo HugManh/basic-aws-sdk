@@ -51,7 +51,7 @@ const CodeController = {
     },
     showCode: async (req, res) => {
         const { language } = req.params;
-        const { filename } = req.body;
+        const { filename } = req.query;
 
         if (!filename) {
             return res.status(400).json({ message: 'Thiếu filename' });

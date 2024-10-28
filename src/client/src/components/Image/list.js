@@ -1,8 +1,6 @@
 import "../../styles/gallery.css";
 
 export const ListImage = ({ images }) => {
-
-
   return (
     <div className="image-gallery">
       {console.log(images.length)}

@@ -73,9 +73,8 @@ const AssetsController = {
     getResource: async (req, res) => {
         try {
             const { bucketName, objectPath, fileName } = req.params;
-            console.log(req.params)
             let objectKey = objectPath ? objectPath + "/" + fileName : fileName
-            console.log(objectKey)
+            console.log({ bucketName, objectPath, fileName, objectKey })
             const objectGetInfo = {
                 bucketName,
                 objectKey

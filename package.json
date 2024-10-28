@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:prod": "node index.js",
+    "start:prod": "babel-node src/server",
     "start:dev": "cross-env NODE_ENV=development nodemon --exec babel-node src/server",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

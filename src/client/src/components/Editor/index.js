@@ -20,12 +20,18 @@ export const Editor = ({ setEditorState }) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await api.getCode('js', "putObject");
-                console.log('---------')
-                console.log('---------',data)
+                const response = await fetch('http://localhost:8000/code/js/show?filename=putObject', {
+                    method: 'GET',
+                    headers: {
+                        Accept: 'text/event-stream',
+                    },
+                });
 
-                const state = EditorState.create({
-                    doc: data || "Hello, world",  // hiển thị `data` nếu có, nếu không hiển thị mặc định
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+
+                const initialState = EditorState.create({
+                    doc: "",  // hiển thị `data` nếu có, nếu không hiển thị mặc định
                     extensions: [
                         basicSetup,
                         xcodeDark,
@@ -36,7 +42,22 @@ export const Editor = ({ setEditorState }) => {
                     ],
                 });
 
-                const view = new EditorView({ state, parent: editor.current });
+                const view = new EditorView({
+                    state: initialState,
+                    parent: editor.current
+                });
+
+                // Stream data and update editor document
+                while (true) {
+                    const {done, value} = await reader.read();
+                    if (done) break;
+
+                    const text = decoder.decode(value);
+                    view.dispatch({
+                        changes: {from: view.state.doc.length, insert: text},
+                    });
+                }
+
                 return () => view.destroy();
             } catch (error) {
                 console.error("Failed to fetch code:", error);

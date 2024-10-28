@@ -25,16 +25,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // Catch 404 and forward to error handler
-app.use((req, res, next) => {
-  const FAVICON_REGEX = /\/(favicon|(apple-)?touch-icon(-i(phone|pad))?(-\d{2,}x\d{2,})?(-precomposed)?)\.(jpe?g|png|ico|gif)$/i
-  if (FAVICON_REGEX.test(req.url)) {
-    res.statusCode = 204;
-    return res.end();
-  }
-  const err = new Error('Not Found: ' + req.method + ' - ' + req.originalUrl);
-  err.status = 404;
-  next(err);
-});
+// app.use((req, res, next) => {
+//   const FAVICON_REGEX = /\/(favicon|(apple-)?touch-icon(-i(phone|pad))?(-\d{2,}x\d{2,})?(-precomposed)?)\.(jpe?g|png|ico|gif)$/i
+//   if (FAVICON_REGEX.test(req.url)) {
+//     res.statusCode = 204;
+//     return res.end();
+//   }
+//   const err = new Error('Not Found: ' + req.method + ' - ' + req.originalUrl);
+//   err.status = 404;
+//   next(err);
+// });
 
 // Error handler
 app.use((err, req, res, next) => {

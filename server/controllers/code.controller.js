@@ -2,7 +2,9 @@ const path = require('path')
 const fs = require('fs');
 const zlib = require('zlib');
 const mime = require('mime-types');
-const { DIR_LIB_AWS, isProd } = require('../config/contants');
+const { isProd } = require('../config');
+
+const DIR_LIB_AWS = path.join(__dirname, '../lib/external/aws')
 
 const CodeController = {
     createCode: async (req, res) => {
@@ -62,7 +64,7 @@ const CodeController = {
         const filePath = path.join(DIR_LIB_AWS, safeFilename);
 
         if (!fs.existsSync(filePath)) {
-            return res.status(404).json({ success: false, error: { message: 'File not found!' } });
+            return res.status(404).json({ success: false, error: { message: 'File not found!', details: `File path ${filePath}` } });
         }
         const contentType = mime.lookup(filePath) || 'application/octet-stream';
 
@@ -90,7 +92,7 @@ const CodeController = {
             console.log('Đã gửi toàn bộ file.', contentType);
         });
     },
-    deleteFiles: async (req, res) => {
+    deleteCode: async (req, res) => {
         const { language } = req.params
         const { all } = req.query
 
@@ -148,7 +150,6 @@ const CodeController = {
             });
         }
     }
-
 }
 
 // Đối tượng ánh xạ ký hiệu ngôn ngữ lập trình đến tên ngôn ngữ

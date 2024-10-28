@@ -11,7 +11,7 @@ router.get('/:language/show', CodeController.showCode);
 //     .route('/:language/update')
 //     .put(CodeController.createCode);
 // Delete code file
-router.delete('/:language/delete', CodeController.deleteFiles);
+router.delete('/:language/delete', CodeController.deleteCode);
 
 
 export default router;

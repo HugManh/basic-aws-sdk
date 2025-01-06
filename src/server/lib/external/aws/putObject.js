@@ -105,34 +105,38 @@
 
 
 
-require("dotenv").config({ path: `.env.prod` });
+require("dotenv").config({ path: `.env.local` });
+// require("dotenv").config({ path: `.env.devel` });
 const AWS = require("aws-sdk");
+const { processFile } = require('./file');
 
 const config = {
     s3Params: {
         endpoint: process.env.AWS_END_POINT,
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        sslEnabled: true,
+        sslEnabled: false,
         s3ForcePathStyle: true,
-        signatureVersion: "v4",
-        region: 'test'
+        // signatureVersion: "v4",
     },
     bucketName: process.env.AWS_BUCKET_NAME
 }
-console.log(config.s3Params)
+console.log(config)
 const client = new AWS.S3(config.s3Params);
 
-// const fileInfo = processFile(dataLocal, true);
-// const { metadata, buffer } = fileInfo;
-// const createAwsKey = (name) => {
-//     let now = new Date();
-//     return now.toLocaleDateString("zh-Hans-CN") + "/" + name
-// }
-// const awsKey = createAwsKey(metadata.fileName)
+const fileInfo = processFile("D:\\localdata\\Videos\\shorts\\mixkit-pet-owner-playing-with-a-cute-cat-1779-medium.mp4", true);
+const { metadata, buffer } = fileInfo;
+const createAwsKey = (name) => {
+    let now = new Date();
+    return now.toLocaleDateString("zh-Hans-CN") + "/" + name
+}
+const awsKey = createAwsKey(metadata.fileName)
+console.log(awsKey)
 
-const awsKey = "fzWcDFq9nv6DKPm8/test.json"
-const buffer = "test"
+// const awsKey = "test/fzWcDFqbvcbvc9nv6DKPm8/test.json"
+// const buffer = "oke man"
+// metadata.mimetype = "application/json"
+
 
 const uploadParams = {
     Bucket: config.bucketName,
@@ -141,7 +145,7 @@ const uploadParams = {
     // SSECustomerAlgorithm: 'AES256',
     // SSECustomerKey: Buffer.from('your-customer-key', 'base64'),
     // SSECustomerKeyMD5: crypto.createHash('md5').update('your-customer-key').digest('base64'),
-    // ContentType: metadata.mimetype,
+    ContentType: metadata.mimetype,
 };
 
 client.putObject(uploadParams, function (err, data) {

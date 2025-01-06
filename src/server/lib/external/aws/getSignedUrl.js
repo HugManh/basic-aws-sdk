@@ -1,8 +1,11 @@
-require("dotenv").config({ path: `.env.dev` })
-const AWS = require("aws-sdk");
-const { processFile, } = require('./file');
-const { dataLocal } = require("../../../config/contants");
+#!/usr/bin/env node
 
+require("dotenv").config({ path: `.env.local` });
+const AWS = require("aws-sdk");
+const readline = require("readline");
+const { processFile } = require('./file');
+
+// Configurations
 const config = {
     s3Params: {
         endpoint: process.env.AWS_END_POINT,
@@ -11,46 +14,97 @@ const config = {
         sslEnabled: true,
         s3ForcePathStyle: true,
         signatureVersion: "v4",
-        region: 'test'
     },
     bucketName: process.env.AWS_BUCKET_NAME
-}
-console.log("config", config)
-
+};
+console.log("config", config);
 const client = new AWS.S3(config.s3Params);
 
 const createAwsKey = (name) => {
     let now = new Date();
-    return now.toLocaleDateString("zh-Hans-CN") + "/" + name
-}
+    return now.toLocaleDateString("zh-Hans-CN") + "/" + name;
+};
 
 const getSignedUrlPromise = async (operation, params) => {
     try {
-        console.log({ success: true, level: "info", message: 'getSignedUrlPromise', ...params, timestamp: new Date().toISOString() })
-        const url = await client.getSignedUrlPromise(operation, params)
-        return url
+        console.log({ success: true, level: "info", message: operation, ...params, timestamp: new Date().toISOString() });
+        const url = await client.getSignedUrlPromise(operation, params);
+        return url;
     } catch (err) {
-        throw new Error(err.message)
+        throw new Error(err.message);
     }
-}
+};
+// CLI Menu
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
-// Main function
-const main = async () => {
-    const fileInfo = processFile(dataLocal);
-    const { metadata } = fileInfo;
-    const awsKey = createAwsKey(metadata.fileName)
-    const params = {
-        Bucket: config.bucketName,
-        Key: awsKey,
-        Expires: 60 * 60,
-        ContentType: metadata.mimetype,
-    };
-    const url = await getSignedUrlPromise('putObject', params);
-    console.log({ success: true, level: "info", message: 'URL put object', url, timestamp: new Date().toISOString() })
-    return
+const menu = `
+Choose an option:
+1. getObject
+2. putObject
+3. Exit
+Enter your choice: `;
+
+const handleGetObject = async () => {
+    rl.question("Enter the S3 key to retrieve: ", async (key) => {
+        const params = {
+            Bucket: config.bucketName,
+            Key: key,
+        };
+        try {
+            const url = await getSignedUrlPromise("getObject", params);
+            console.log("Signed URL for getObject:", url);
+        } catch (err) {
+            console.error("Error getting signed URL:", err.message);
+        } finally {
+            displayMenu();
+        }
+    });
 };
 
-main().catch((err) => {
-    console.error({ success: false, level: "error", message: err.message, timestamp: new Date().toISOString() });
-    process.exit(1);
-});
+const handlePutObject = async () => {
+    rl.question("Enter the local file path to upload: ", (localPath) => {
+        rl.question("Enter the S3 key for the file: ", async (key) => {
+            const fileInfo = processFile(localPath);
+            const { metadata } = fileInfo;
+            const params = {
+                Bucket: config.bucketName,
+                Key: key,
+                ContentType: metadata.mimetype,
+            };
+            try {
+                const url = await getSignedUrlPromise("putObject", params);
+                console.log("Signed URL for putObject:", url);
+            } catch (err) {
+                console.error("Error creating signed URL:", err.message);
+            } finally {
+                displayMenu();
+            }
+        });
+    });
+};
+
+const displayMenu = () => {
+    rl.question(menu, (choice) => {
+        switch (choice.trim()) {
+            case "1":
+                handleGetObject();
+                break;
+            case "2":
+                handlePutObject();
+                break;
+            case "3":
+                console.log("Exiting...");
+                rl.close();
+                break;
+            default:
+                console.log("Invalid choice. Please select 1, 2, or 3.");
+                displayMenu();
+        }
+    });
+};
+
+// Start the CLI
+displayMenu();

@@ -4,6 +4,7 @@ const mime = require('mime-types')
 
 // Process the file (metadata, buffer)
 const processFile = (filePath, includeBuffer = false) => {
+    console.log("=====", filePath)
     const stats = fs.statSync(filePath);
     const metadata = {
         size: stats.size,

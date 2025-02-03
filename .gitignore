@@ -15,3 +15,9 @@ dist-ssr
 *.sw?
 .env
 
+# Ignore environment variable files
+.env
+.env.*  
+
+# Allow example environment file
+!.env.example

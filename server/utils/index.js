@@ -1,6 +1,7 @@
-import { appendObjectToJSONFile, readJSONFile } from './files'
+import { appendObjectToJSONFile, readJSONFile, processFile } from './files'
 
 export {
     appendObjectToJSONFile,
     readJSONFile,
+    processFile
 }

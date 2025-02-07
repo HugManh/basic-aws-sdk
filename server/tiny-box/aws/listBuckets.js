@@ -1,4 +1,4 @@
-const { s3 } = require("../../../config")
+const { s3 } = require("../../config")
 
 
 // Get list buckets

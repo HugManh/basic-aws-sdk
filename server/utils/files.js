@@ -49,7 +49,6 @@ export const appendObjectToJSONFile = (filePath, newObject) => {
     });
 };
 
-
 // Hàm xử lý đọc, ghi file JSON lớn
 export const readJSONFile = (filePath) => {
     return new Promise((resolve, reject) => {
@@ -77,4 +76,21 @@ export const readJSONFile = (filePath) => {
             reject('Lỗi khi đọc file: ' + err);
         });
     });
+};
+
+export const processFile = (filePath, includeBuffer = false) => {
+    console.log("=====", filePath)
+    const stats = fs.statSync(filePath);
+    const metadata = {
+        size: stats.size,
+        createdAt: stats.birthtime,
+        modifiedAt: stats.mtime,
+        fileName: path.basename(filePath),
+        mimetype: mime.lookup(filePath),
+    };
+    let buffer = null;
+    if (includeBuffer) {
+        buffer = fs.readFileSync(filePath);
+    }
+    return { metadata, buffer };
 };

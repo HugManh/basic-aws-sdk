@@ -2,7 +2,7 @@ require("dotenv").config({ path: `.env.local` });
 const fs = require('fs');
 const path = require("path");
 const mime = require('mime-types')
-const AwsClient = require('./AwsClient')
+const AwsClient = require('./AwsClient.test')
 
 // Configurations
 const config = {
@@ -48,3 +48,4 @@ const { metadata, buffer } = fileInfo;
 const objectkey = createAwsKey(metadata.fileName)
 client.put("dinodino", objectkey, buffer, metadata.mimetype)
 
+client.getSignedUrl("getObject", "dinodino", objectkey).then((url) => { console.log(url) })

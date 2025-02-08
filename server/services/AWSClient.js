@@ -8,25 +8,59 @@ class AwsClient {
         this._client = new AWS.S3(this._s3Params);
     }
 
-    createAwsKey(requestObjectKey) {
+    _createAwsKey(requestObjectKey) {
         const now = new Date();
         return `${now.toLocaleDateString("zh-Hans-CN")}/${requestObjectKey}`;
     }
 
-    async getSignedUrl(operation, objectGetInfo) {
-        console.error("objectGetInfo ", objectGetInfo)
-        const { objectKey, bucketName, mimetype } = objectGetInfo;
-        try {
-            const awskey = objectKey
-            const params = {
-                Bucket: bucketName,
-                Key: awskey,
-                ContentType: mimetype
+    createBucket(bucketName) {
+        const params = {
+            Bucket: bucketName,
+        };
+
+        return this._client.createBucket(params, function (err, data) {
+            if (err) {
+                console.log("Error", err);
+            } else {
+                console.log("Success", data.Location);
             }
-            return await this._client.getSignedUrlPromise(operation, params);
-        } catch (err) {
-            throw new Error(err);
+        });
+    }
+
+    put(bucketName, objectkey, stream, contentType) {
+        const awsKey = this._createAwsKey(objectkey)
+
+        const putCb = function (err, data) {
+            if (err) console.log(err, err.stack);
+            else console.log('Successfully uploaded data with SSE-C:', data);
+
+        };
+
+        const params = {
+            Bucket: bucketName,
+            Key: awsKey,
+        };
+
+        if (contentType !== undefined) {
+            params.ContentType = contentType;
         }
+        if (!stream) {
+            return this._client.putObject(params, putCb);
+        }
+
+        params.Body = stream;
+        return this._client.upload(params, putCb);
+    }
+
+    async getSignedUrl(operation, objectGetInfo) {
+        const { objectKey, bucketName, mimetype } = objectGetInfo;
+        const awskey = objectKey
+        const params = {
+            Bucket: bucketName,
+            Key: awskey,
+            ContentType: mimetype
+        }
+        return await this._client.getSignedUrlPromise(operation, params);
     }
 
     async getObject(objectGetInfo, range) {

@@ -105,8 +105,7 @@
 
 
 
-require("dotenv").config({ path: `.env.local` });
-// require("dotenv").config({ path: `.env.devel` });
+require("dotenv").config();
 const AWS = require("aws-sdk");
 const { processFile } = require('./file');
 
@@ -117,7 +116,7 @@ const config = {
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         sslEnabled: false,
         s3ForcePathStyle: true,
-        // signatureVersion: "v4",
+        signatureVersion: "v4",
     },
     bucketName: process.env.AWS_BUCKET_NAME
 }
@@ -137,15 +136,18 @@ console.log(awsKey)
 // const buffer = "oke man"
 // metadata.mimetype = "application/json"
 
+// Define key and buffer
+const aws_key = "1111111111111111/test.json"
+const buffers = ""
 
 const uploadParams = {
     Bucket: config.bucketName,
-    Key: awsKey,
-    Body: buffer,
+    Key: aws_key,
+    Body: buffers,
     // SSECustomerAlgorithm: 'AES256',
     // SSECustomerKey: Buffer.from('your-customer-key', 'base64'),
     // SSECustomerKeyMD5: crypto.createHash('md5').update('your-customer-key').digest('base64'),
-    ContentType: metadata.mimetype,
+    // ContentType: metadata.mimetype,
 };
 
 client.putObject(uploadParams, function (err, data) {

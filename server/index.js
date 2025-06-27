@@ -3,12 +3,12 @@ import http from 'http';
 // import fs from 'fs';
 // import path from 'path';
 import app from './app';
+import { SERVER_HOST, SERVER_PORT } from './config';
 
 // Start http server
-const HTTP_PORT = normalizePort(process.env.PORT || 8000);
-app.set('port', HTTP_PORT);
+app.set('port', SERVER_PORT);
 const httpServer = http.createServer(app);
-httpServer.listen(HTTP_PORT, onListening);
+httpServer.listen(SERVER_PORT, SERVER_HOST, () => onListening(httpServer));
 
 // Start https server
 // const HTTPS_PORT = normalizePort(process.env.HTTPS_PORT || 443);
@@ -20,30 +20,28 @@ httpServer.listen(HTTP_PORT, onListening);
 // };
 // https.createServer(options, app).listen(HTTPS_PORT, onListening);
 
-function onListening() {
-  let addr = this.address();
-  let bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port;
-  console.info('Web server listening on ' + bind);
-}
+function onListening(server) {
+    const addr = server.address();
+    if (!addr) {
+        console.warn("⚠️ server.address() is null.");
+        return;
+    }
 
-function normalizePort(val) {
-  let port = parseInt(val, 10);
-  if (isNaN(port)) return val;            // named pipe
-  if (port >= 0) return port;             // port number
-  return false;
+    const bind = typeof addr === 'string' ? 'pipe ' + addr : addr.address + ':' + addr.port;
+    console.info('✅ Web server listening on ' + bind);
 }
 
 const shutdown = () => {
-  console.info('[shutdown]', new Date());
-  process.exit(0);
+    console.info('[shutdown]', new Date());
+    process.exit(0);
 };
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
 process.on('uncaughtException', (err) => {
-  console.error('[uncaughtException]', err, err.stack);
+    console.error('[uncaughtException]', err, err.stack);
 });
 
 process.on('unhandledRejection', (reason, p) => {
-  console.warn('[unhandledRejection] ', p, reason, reason ? reason.stack : undefined);
+    console.warn('[unhandledRejection] ', p, reason, reason ? reason.stack : undefined);
 });

@@ -1,12 +1,9 @@
-import { Router } from 'express';
-import AwsController from '../controllers/assets.controller';
-// import assets from './assets'
-import coder from './code'
-const router = new Router();
+import express from 'express';
+import v1 from './v1';
+const routes = express.Router();
 
-// router.use('/api', assets);
-router.use('/code', coder)
-router.use((err, req, res, next) => {
+routes.use('/api', v1);
+routes.use((err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(413).send('File too large');
     }
@@ -16,6 +13,4 @@ router.use((err, req, res, next) => {
     res.status(500).send('Server error');
 });
 
-router.get('/:bucketName/:objectPath(*)?/:fileName', AwsController.getResource);
-
-export default router;
+export default routes;

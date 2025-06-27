@@ -107,7 +107,24 @@
 
 require("dotenv").config();
 const AWS = require("aws-sdk");
-const { processFile } = require('./file');
+
+// Process the file (metadata, buffer)
+const processFile = (filePath, includeBuffer = false) => {
+    console.log("=====", filePath)
+    const stats = fs.statSync(filePath);
+    const metadata = {
+        size: stats.size,
+        createdAt: stats.birthtime,
+        modifiedAt: stats.mtime,
+        fileName: path.basename(filePath),
+        mimetype: mime.lookup(filePath),
+    };
+    let buffer = null;
+    if (includeBuffer) {
+        buffer = fs.readFileSync(filePath);
+    }
+    return { metadata, buffer };
+};
 
 const config = {
     s3Params: {
